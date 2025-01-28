@@ -4,12 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simulador de Crédito Inmobiliario</title>
-  <!-- Vincular el CSS -->
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Librerías externas necesarias -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #007bff;
+      --light-gray: #f5f5f5;
+      --white: #ffffff;
+    }
+
+    body {
+      background: var(--light-gray);
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    header {
+      background: var(--primary-color);
+      color: var(--white);
+      text-align: center;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      width: 80px;
+      margin-right: 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    input, select {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .btn {
+      background: var(--secondary-color);
+      color: var(--white);
+      padding: 0.5rem 1rem;
+      border: none;
+      margin-top: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .results {
+      margin-top: 2rem;
+      background: #e9ecef;
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .chart-container {
+      margin-top: 2rem;
+      text-align: center;
+    }
+  </style>
+  <!-- Librerías externas con versiones específicas -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@1.5.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28"></script>
 </head>
 <body>
   <header>
@@ -25,9 +116,7 @@
     <h2>Calcule su préstamo</h2>
     <p>Complete los siguientes campos para realizar la simulación de su crédito.</p>
 
-    <!-- FORMULARIO -->
     <div class="form-grid">
-      <!-- Desarrollo -->
       <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
         <select id="developmentSelect" onchange="handleDevelopmentChange()">
@@ -38,7 +127,6 @@
         </select>
       </div>
 
-      <!-- Modelo -->
       <div class="form-group">
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" onchange="handleModelChange()" disabled>
@@ -46,7 +134,6 @@
         </select>
       </div>
 
-      <!-- Valor de la propiedad -->
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
         <input 
@@ -57,7 +144,6 @@
         />
       </div>
 
-      <!-- Pago inicial -->
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
         <input
@@ -68,7 +154,6 @@
         />
       </div>
 
-      <!-- Plazo en años -->
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
         <input
@@ -79,7 +164,6 @@
         />
       </div>
 
-      <!-- Institución financiera -->
       <div class="form-group">
         <label for="bankSelect">Institución Financiera</label>
         <select id="bankSelect" onchange="validateFields()">
@@ -91,7 +175,6 @@
         </select>
       </div>
 
-      <!-- Pago extra -->
       <div class="form-group">
         <label for="extraPayment">Pago extra mensual (MXN)</label>
         <input
@@ -103,13 +186,11 @@
       </div>
     </div>
 
-    <!-- Botones -->
     <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>
       Calcular crédito
     </button>
     <button class="btn" onclick="resetForm()">Limpiar campos</button>
 
-    <!-- Resultados -->
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
       <p id="bankName"></p>
@@ -126,7 +207,6 @@
         Descargar reporte en PDF
       </button>
 
-      <!-- Tabla de amortización -->
       <div id="amortSection" style="display: none;">
         <h3>Tabla de Amortización</h3>
         <table id="amortizationTable">
@@ -142,14 +222,10 @@
           </thead>
           <tbody></tbody>
         </table>
-        <div class="chart-container">
-          <canvas id="chart"></canvas>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- Vincular el JS -->
   <script src="script.js" defer></script>
 </body>
 </html>
