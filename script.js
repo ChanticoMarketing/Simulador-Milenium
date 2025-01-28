@@ -99,27 +99,36 @@ function calculateLoan() {
 
   document.getElementById("resultsSection").style.display = "block";
 
-  amortizationData = generateAmortization(loanAmount, monthlyInterestRate, numberOfMonths, monthlyPayment);
+  amortizationData = generateAmortization(loanAmount, monthlyInterestRate, loanYears, monthlyPayment);
 }
 
-// Genera los datos de amortización
-function generateAmortization(principal, monthlyInterestRate, numMonths, monthlyPayment) {
+// Genera los datos de amortización por años
+function generateAmortization(principal, monthlyInterestRate, numYears, monthlyPayment) {
   const amortizationData = [];
   let balance = principal;
 
-  for (let month = 1; month <= numMonths; month++) {
-    const interestPaid = balance * monthlyInterestRate;
-    const capitalPaid = monthlyPayment - interestPaid;
-    balance -= capitalPaid;
+  for (let year = 1; year <= numYears; year++) {
+    let interestPaidYearly = 0;
+    let capitalPaidYearly = 0;
 
-    if (balance < 0) balance = 0;
+    for (let month = 1; month <= 12; month++) {
+      const interestPaid = balance * monthlyInterestRate;
+      const capitalPaid = monthlyPayment - interestPaid;
+      balance -= capitalPaid;
+
+      if (balance < 0) balance = 0;
+
+      interestPaidYearly += interestPaid;
+      capitalPaidYearly += capitalPaid;
+
+      if (balance === 0) break;
+    }
 
     amortizationData.push({
-      month: month,
-      paymentDate: new Date(new Date().setMonth(new Date().getMonth() + month)),
-      monthlyPayment: monthlyPayment.toFixed(2),
-      interestPaid: interestPaid.toFixed(2),
-      capitalPaid: capitalPaid.toFixed(2),
+      year: year,
+      annualPayment: (monthlyPayment * 12).toFixed(2),
+      interestPaid: interestPaidYearly.toFixed(2),
+      capitalPaid: capitalPaidYearly.toFixed(2),
       remainingBalance: balance.toFixed(2),
     });
 
@@ -137,9 +146,8 @@ function fillAmortizationTable() {
   amortizationData.forEach((row) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${row.month}</td>
-      <td>${row.paymentDate.toLocaleDateString("es-MX")}</td>
-      <td>${row.monthlyPayment}</td>
+      <td>${row.year}</td>
+      <td>${row.annualPayment}</td>
       <td>${row.interestPaid}</td>
       <td>${row.capitalPaid}</td>
       <td>${row.remainingBalance}</td>
@@ -161,13 +169,12 @@ function toggleAmortTable() {
 
 // Genera el archivo PDF con los datos y la tabla de amortización
 function generatePDF() {
-  const doc = new jsPDF('p', 'pt', 'letter'); // Sintaxis para jsPDF 1.5.3
+  const doc = new jsPDF('p', 'pt', 'letter');
   const title = "Reporte de Simulación de Crédito Inmobiliario";
 
   doc.setFontSize(14);
   doc.text(title, 40, 40);
 
-  // Datos principales
   const bankName = document.getElementById("bankName").textContent;
   const interestRate = document.getElementById("interestRate").textContent;
   const loanAmount = document.getElementById("loanAmount").textContent;
@@ -181,12 +188,10 @@ function generatePDF() {
   doc.text(monthlyPayment, 40, 130);
   doc.text(totalPayment, 40, 150);
 
-  // Tabla de amortización
-  const tableColumns = ["Mes", "Fecha de Pago", "Pago Mensual", "Intereses", "Capital", "Saldo Restante"];
+  const tableColumns = ["Año", "Pago Anual", "Intereses", "Capital", "Saldo Restante"];
   const tableRows = amortizationData.map((row) => [
-    row.month,
-    row.paymentDate.toLocaleDateString("es-MX"),
-    row.monthlyPayment,
+    row.year,
+    row.annualPayment,
     row.interestPaid,
     row.capitalPaid,
     row.remainingBalance,
