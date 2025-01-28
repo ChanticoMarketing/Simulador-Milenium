@@ -161,12 +161,13 @@ function toggleAmortTable() {
 
 // Genera el archivo PDF con los datos y la tabla de amortización
 function generatePDF() {
-  const doc = new jsPDF({ unit: "pt", format: "letter" });
+  const doc = new jsPDF('p', 'pt', 'letter'); // Sintaxis para jsPDF 1.5.3
   const title = "Reporte de Simulación de Crédito Inmobiliario";
 
   doc.setFontSize(14);
   doc.text(title, 40, 40);
 
+  // Datos principales
   const bankName = document.getElementById("bankName").textContent;
   const interestRate = document.getElementById("interestRate").textContent;
   const loanAmount = document.getElementById("loanAmount").textContent;
@@ -180,6 +181,7 @@ function generatePDF() {
   doc.text(monthlyPayment, 40, 130);
   doc.text(totalPayment, 40, 150);
 
+  // Tabla de amortización
   const tableColumns = ["Mes", "Fecha de Pago", "Pago Mensual", "Intereses", "Capital", "Saldo Restante"];
   const tableRows = amortizationData.map((row) => [
     row.month,
@@ -195,6 +197,7 @@ function generatePDF() {
     body: tableRows,
     startY: 200,
     theme: "grid",
+    styles: { fontSize: 8 },
   });
 
   doc.save("SimulacionCredito.pdf");
