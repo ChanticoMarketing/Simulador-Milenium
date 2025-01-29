@@ -1,3 +1,4 @@
+// Definición de los modelos y precios por desarrollo según el mes
 const DEVELOPMENTS = {
   alta: [
     { name: "Santa Clara", prices: { 1: 1600000, 2: 1650000, 3: 1700000 } },
@@ -17,59 +18,67 @@ const DEVELOPMENTS = {
   ],
 };
 
-const currentMonth = new Date().getMonth() + 1;
+// Obtiene el mes actual
+const currentMonth = new Date().getMonth() + 1; // Enero = 1, Febrero = 2, etc.
 
+// Maneja el cambio de desarrollo para llenar el select de modelos
 function handleDevelopmentChange() {
   const developmentSelect = document.getElementById("developmentSelect");
   const modelSelect = document.getElementById("modelSelect");
   modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
 
   const selectedDev = developmentSelect.value;
-  if (DEVELOPMENTS[selectedDev]) {
+  if (selectedDev && DEVELOPMENTS[selectedDev]) {
     modelSelect.disabled = false;
     DEVELOPMENTS[selectedDev].forEach((model) => {
       const option = document.createElement("option");
-      option.value = JSON.stringify(model.prices);
+      option.value = JSON.stringify(model.prices); // Guardamos los precios como string JSON
       option.textContent = model.name;
       modelSelect.appendChild(option);
     });
   } else {
     modelSelect.disabled = true;
   }
+  validateFields();
 }
 
+// Maneja el cambio de modelo para actualizar el valor de la propiedad
 function handleModelChange() {
   const modelSelect = document.getElementById("modelSelect");
   const propertyValueInput = document.getElementById("propertyValue");
-
+  
   try {
     if (modelSelect.value) {
-      const modelPrices = JSON.parse(modelSelect.value);
-      propertyValueInput.value = modelPrices[currentMonth] || modelPrices[1];
+      const modelPrices = JSON.parse(modelSelect.value); // Recuperamos los precios del modelo seleccionado
+      const selectedPrice = modelPrices[currentMonth] || modelPrices[1]; // Si el mes no está en el rango, usa Enero como default
+      propertyValueInput.value = selectedPrice;
     }
   } catch (error) {
-    console.error("Error al procesar los precios del modelo:", error);
+    console.error("Error al seleccionar modelo:", error);
   }
+  validateFields();
 }
 
+// Valida que todos los campos necesarios estén llenos
 function validateFields() {
-  const propertyValue = document.getElementById("propertyValue").value;
-  const downPayment = document.getElementById("downPayment").value;
-  const loanYears = document.getElementById("loanYears").value;
+  const propertyValue = parseFloat(document.getElementById("propertyValue").value) || 0;
+  const downPayment = parseFloat(document.getElementById("downPayment").value) || 0;
+  const loanYears = parseInt(document.getElementById("loanYears").value) || 0;
   const bankSelect = document.getElementById("bankSelect");
   const calcBtn = document.getElementById("calcBtn");
 
-  calcBtn.disabled = !(propertyValue && downPayment && loanYears && bankSelect.value);
+  calcBtn.disabled = !(propertyValue > 0 && downPayment > 0 && loanYears > 0 && bankSelect.value);
 }
 
-function resetForm() {
-  document.getElementById("developmentSelect").value = "";
-  document.getElementById("modelSelect").innerHTML = '<option disabled selected>Elige un modelo</option>';
-  document.getElementById("modelSelect").disabled = true;
-  document.getElementById("propertyValue").value = "";
-  document.getElementById("downPayment").value = "";
-  document.getElementById("loanYears").value = "";
-  document.getElementById("bankSelect").value = "";
-  document.getElementById("calcBtn").disabled = true;
-  document.getElementById("resultsSection").style.display = "none";
+// Muestra/oculta la tabla de amortización
+function toggleAmortTable() {
+  const amortSection = document.getElementById("amortSection");
+  if (!amortSection) return;
+
+  if (amortSection.style.display === "none" || amortSection.style.display === "") {
+    fillAmortizationTable();
+    amortSection.style.display = "block";
+  } else {
+    amortSection.style.display = "none";
+  }
 }
