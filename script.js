@@ -18,8 +18,8 @@ const DEVELOPMENTS = {
   ],
 };
 
-// Obtiene el mes actual (1 = Enero, 2 = Febrero, etc.)
-const currentMonth = new Date().getMonth() + 1;
+// Obtiene el mes actual
+const currentMonth = new Date().getMonth() + 1; // Enero = 1, Febrero = 2, etc.
 
 function handleDevelopmentChange() {
   const modelSelect = document.getElementById("modelSelect");
@@ -63,7 +63,7 @@ function validateFields() {
   }
 }
 
-// Calcula el préstamo y muestra los resultados
+// Cálculo del préstamo
 function calculateLoan() {
   const propertyValue = parseFloat(document.getElementById("propertyValue").value);
   const downPayment = parseFloat(document.getElementById("downPayment").value);
@@ -93,49 +93,76 @@ function calculateLoan() {
   document.getElementById("simulationDate").textContent = `Fecha de simulación: ${new Date().toLocaleDateString("es-MX")}`;
 
   document.getElementById("resultsSection").style.display = "block";
+
+  amortizationData = generateAmortization(loanAmount, monthlyInterestRate, loanYears, monthlyPayment);
 }
 
-// Genera el archivo PDF con los datos del crédito
-function generatePDF() {
-  try {
-    if (typeof jsPDF === "undefined") {
-      alert("No se puede generar el PDF. jsPDF no está cargado.");
-      return;
+// Genera la tabla de amortización
+function generateAmortization(principal, monthlyInterestRate, numYears, monthlyPayment) {
+  const amortizationData = [];
+  let balance = principal;
+
+  for (let year = 1; year <= numYears; year++) {
+    let interestPaidYearly = 0;
+    let capitalPaidYearly = 0;
+
+    for (let month = 1; month <= 12; month++) {
+      if (balance <= 0) break;
+
+      const interestPaid = balance * monthlyInterestRate;
+      const capitalPaid = monthlyPayment - interestPaid;
+      balance -= capitalPaid;
+
+      interestPaidYearly += interestPaid;
+      capitalPaidYearly += capitalPaid;
+
+      if (balance < 0) balance = 0;
     }
 
-    const doc = new jsPDF('p', 'pt', 'letter');
-    doc.setFontSize(14);
-    doc.text("Reporte de Simulación de Crédito Inmobiliario", 40, 40);
+    amortizationData.push({
+      year: year,
+      annualPayment: (monthlyPayment * 12).toFixed(2),
+      interestPaid: interestPaidYearly.toFixed(2),
+      capitalPaid: capitalPaidYearly.toFixed(2),
+      remainingBalance: balance.toFixed(2),
+    });
 
-    const bankName = document.getElementById("bankName").textContent;
-    const interestRate = document.getElementById("interestRate").textContent;
-    const loanAmount = document.getElementById("loanAmount").textContent;
-    const monthlyPayment = document.getElementById("monthlyPayment").textContent;
-    const totalPayment = document.getElementById("totalPayment").textContent;
-
-    doc.setFontSize(12);
-    doc.text(bankName, 40, 70);
-    doc.text(interestRate, 40, 90);
-    doc.text(loanAmount, 40, 110);
-    doc.text(monthlyPayment, 40, 130);
-    doc.text(totalPayment, 40, 150);
-
-    doc.save("SimulacionCredito.pdf");
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    alert("Ocurrió un error al generar el PDF.");
+    if (balance === 0) break;
   }
+
+  return amortizationData;
 }
 
-// Resetea el formulario
-function resetForm() {
-  document.getElementById("developmentSelect").value = "";
-  document.getElementById("modelSelect").innerHTML = '<option disabled selected>Elige un modelo</option>';
-  document.getElementById("modelSelect").disabled = true;
-  document.getElementById("propertyValue").value = "";
-  document.getElementById("downPayment").value = "";
-  document.getElementById("loanYears").value = "";
-  document.getElementById("bankSelect").value = "";
-  document.getElementById("calcBtn").disabled = true;
-  document.getElementById("resultsSection").style.display = "none";
+// Muestra la tabla de amortización
+function fillAmortizationTable() {
+  const tableBody = document.querySelector("#amortizationTable tbody");
+  tableBody.innerHTML = "";
+
+  amortizationData.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.year}</td>
+      <td>${row.annualPayment}</td>
+      <td>${row.interestPaid}</td>
+      <td>${row.capitalPaid}</td>
+      <td>${row.remainingBalance}</td>
+    `;
+    tableBody.appendChild(tr);
+  });
 }
+
+// Genera el PDF con la tabla de amortización
+function generatePDF() {
+  const doc = new jsPDF('p', 'pt', 'letter');
+  doc.setFontSize(14);
+  doc.text("Reporte de Simulación de Crédito Inmobiliario", 40, 40);
+
+  const tableColumns = ["Año", "Pago Anual", "Intereses", "Capital", "Saldo Restante"];
+  const tableRows = amortizationData.map(row => [
+    row.year, row.annualPayment, row.interestPaid, row.capitalPaid, row.remainingBalance
+  ]);
+
+  doc.autoTable({ head: [tableColumns], body: tableRows, startY: 200, theme: "grid", styles: { fontSize: 8 } });
+  doc.save("SimulacionCredito.pdf");
+}
+
