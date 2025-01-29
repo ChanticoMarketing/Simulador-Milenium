@@ -19,6 +19,15 @@
 
     <div class="form-grid">
       <div class="form-group">
+        <label for="monthSelect">Mes de simulación</label>
+        <select id="monthSelect">
+          <option value="ene-25">Enero 2025</option>
+          <option value="feb-25">Febrero 2025</option>
+          <option value="mar-25">Marzo 2025</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
         <select id="developmentSelect">
           <option value="" disabled selected>Elige un desarrollo</option>
@@ -37,7 +46,7 @@
 
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <input type="number" id="propertyValue" placeholder="Selecciona un modelo" readonly>
+        <input type="number" id="propertyValue" readonly>
       </div>
 
       <div class="form-group">
@@ -66,8 +75,8 @@
     <div id="errorMessage" class="error-message" style="display: none;"></div>
 
     <div class="button-group">
-      <button class="btn" id="calcBtn" disabled>Calcular crédito</button>
-      <button class="btn" id="resetBtn">Limpiar campos</button>
+      <button class="btn btn-primary" id="calcBtn" disabled>Calcular crédito</button>
+      <button class="btn btn-secondary" id="resetBtn">Limpiar campos</button>
     </div>
 
     <div id="resultsSection" class="results" style="display: none;">
@@ -82,8 +91,8 @@
       </div>
 
       <div class="button-group">
-        <button class="btn" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
-        <button class="btn" id="generatePDFBtn">Descargar reporte en PDF</button>
+        <button class="btn btn-primary" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
+        <button class="btn btn-primary" id="generatePDFBtn">Descargar reporte en PDF</button>
       </div>
 
       <div id="amortSection" style="display: none;">
