@@ -4,29 +4,86 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simulador de Crédito Inmobiliario</title>
-  <style>
-    :root {
-      --primary-color: #003366;
-      --secondary-color: #007bff;
-      --light-gray: #f5f5f5;
-      --white: #ffffff;
-    }
+  <link rel="stylesheet" href="styles.css">
+  <!-- Librerías externas -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@1.5.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28"></script>
+</head>
+<body>
 
-    body {
-      background: var(--light-gray);
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
+  <header>
+    <h1>Simulador de Crédito Inmobiliario</h1>
+  </header>
 
-    header {
-      background: var(--primary-color);
-      color: var(--white);
-      text-align: center;
-      padding: 1rem;
-    }
+  <div class="container">
+    <h2>Calcule su préstamo</h2>
+    <p>Complete los siguientes campos para realizar la simulación de su crédito.</p>
 
-    .container {
-      max-width: 800px;
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="developmentSelect">Desarrollo</label>
+        <select id="developmentSelect" onchange="handleDevelopmentChange()">
+          <option value="" disabled selected>Elige un desarrollo</option>
+          <option value="alta">Alta California</option>
+          <option value="vista">Vista California</option>
+          <option value="bosques">Bosques California</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="modelSelect">Modelo</label>
+        <select id="modelSelect" onchange="handleModelChange()" disabled>
+          <option value="" disabled selected>Elige un modelo</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="propertyValue">Valor de la propiedad (MXN)</label>
+        <input type="number" id="propertyValue" placeholder="Ej. 2500000" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="downPayment">Pago inicial (MXN)</label>
+        <input type="number" id="downPayment" placeholder="Ej. 500000" oninput="validateFields()" />
+      </div>
+
+      <div class="form-group">
+        <label for="loanYears">Plazo del crédito (años)</label>
+        <input type="number" id="loanYears" placeholder="Ej. 20" oninput="validateFields()" />
+      </div>
+
+      <div class="form-group">
+        <label for="bankSelect">Institución Financiera</label>
+        <select id="bankSelect" onchange="validateFields()">
+          <option value="" disabled selected>Elige una institución</option>
+          <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
+          <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
+          <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
+          <option value="scotiabank" data-rate="9.50">Scotiabank ~ 9.50%</option>
+          <option value="hsbc" data-rate="9.95">HSBC ~ 9.95%</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>Calcular crédito</button>
+    <button class="btn" onclick="resetForm()">Limpiar campos</button>
+
+    <div id="resultsSection" class="results" style="display: none;">
+      <h3>Resultados de la Simulación</h3>
+      <p id="bankName"></p>
+      <p id="interestRate"></p>
+      <p id="loanAmount"></p>
+      <p id="monthlyPayment"></p>
+      <p id="totalPayment"></p>
+      <p id="simulationDate" style="font-style: italic;"></p>
+
+      <button class="btn" onclick="generatePDF()">Descargar reporte en PDF</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
       margin: 2rem auto;
       padding: 2rem;
       background: var(--white);
