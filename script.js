@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Elementos del DOM
   const elements = {
+    monthSelect: document.getElementById('monthSelect'),
     developmentSelect: document.getElementById('developmentSelect'),
     modelSelect: document.getElementById('modelSelect'),
     propertyValue: document.getElementById('propertyValue'),
@@ -23,22 +24,43 @@ document.addEventListener("DOMContentLoaded", () => {
     amortTableBody: document.querySelector('#amortizationTable tbody')
   };
 
-  // Datos iniciales
+  // Base de datos de precios
   const DEVELOPMENTS = {
-    alta: [{ name: "Santa Clara", price: 1700000 }],
-    vista: [{ name: "Ventura PA", price: 750000 }],
-    bosques: [{ name: "Roble A", price: 4900000 }],
+    vista: {
+      name: "Vista California",
+      models: {
+        "Ventura PA": { "ene-25": 725000, "feb-25": 750000, "mar-25": 775000 },
+        "Ventura PB": { "ene-25": 855000, "feb-25": 870000, "mar-25": 890000 },
+        "Cambria": { "ene-25": 1275000, "feb-25": 1300000, "mar-25": 1320000 },
+        "Catalina": { "ene-25": 1560000, "feb-25": 1580000, "mar-25": 1600000 }
+      }
+    },
+    alta: {
+      name: "Alta California",
+      models: {
+        "Santa Clara": { "ene-25": 1600000, "feb-25": 1650000, "mar-25": 1700000 },
+        "Santa Lucia": { "ene-25": 1900000, "feb-25": 1950000, "mar-25": 2000000 },
+        "Santa Barbara": { "ene-25": 2450000, "feb-25": 2500000, "mar-25": 2600000 }
+      }
+    },
+    bosques: {
+      name: "Bosques California",
+      models: {
+        "Roble": { "ene-25": 4750000, "feb-25": 4850000, "mar-25": 4900000 },
+        "Secuoya": { "ene-25": 5850000, "feb-25": 5925000, "mar-25": 6050000 }
+      }
+    }
   };
 
   let amortizationData = [];
 
-  // Configuración inicial
-  const setup = () => {
-    initEventListeners();
+  // Inicialización
+  const init = () => {
+    setupEventListeners();
     populateModels();
   };
 
-  // Llenado de modelos
+  // Llenar modelos dinámicamente
   const populateModels = () => {
     elements.developmentSelect.addEventListener('change', () => {
       const selectedDev = elements.developmentSelect.value;
@@ -46,28 +68,42 @@ document.addEventListener("DOMContentLoaded", () => {
       
       if (selectedDev) {
         elements.modelSelect.disabled = false;
-        DEVELOPMENTS[selectedDev].forEach(model => {
-          const option = new Option(model.name, model.price);
+        Object.keys(DEVELOPMENTS[selectedDev].models).forEach(modelName => {
+          const option = new Option(modelName);
           elements.modelSelect.add(option);
         });
       }
     });
   };
 
-  // Event listeners
-  const initEventListeners = () => {
-    elements.modelSelect.addEventListener('change', () => {
-      elements.propertyValue.value = elements.modelSelect.value;
-      validateForm();
-    });
-
+  // Configurar eventos
+  const setupEventListeners = () => {
+    // Actualizar precio al cambiar modelo/mes
+    elements.modelSelect.addEventListener('change', updatePropertyValue);
+    elements.monthSelect.addEventListener('change', updatePropertyValue);
+    
+    // Validaciones
     elements.downPayment.addEventListener('input', validateDownPayment);
-    elements.loanYears.addEventListener('input', validateForm);
-    elements.bankSelect.addEventListener('change', validateForm);
+    [elements.loanYears, elements.bankSelect].forEach(el => el.addEventListener('change', validateForm));
+    
+    // Botones principales
     elements.calcBtn.addEventListener('click', calculateLoan);
     elements.resetBtn.addEventListener('click', resetForm);
     elements.toggleAmortBtn.addEventListener('click', toggleAmortization);
     elements.generatePDFBtn.addEventListener('click', generatePDF);
+  };
+
+  // Actualizar valor de propiedad
+  const updatePropertyValue = () => {
+    if (elements.modelSelect.value) {
+      const selectedDev = elements.developmentSelect.value;
+      const selectedModel = elements.modelSelect.options[elements.modelSelect.selectedIndex].text;
+      const selectedMonth = elements.monthSelect.value;
+      
+      const price = DEVELOPMENTS[selectedDev].models[selectedModel][selectedMonth];
+      elements.propertyValue.value = price;
+      validateForm();
+    }
   };
 
   // Validaciones
@@ -95,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Cálculos financieros
+  // Cálculo del crédito
   const calculateLoan = () => {
     const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
     const years = parseFloat(elements.loanYears.value);
@@ -123,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.toggleAmortBtn.style.display = 'inline-block';
   };
 
-  // Tabla de amortización
+  // Generar tabla de amortización
   const generateAmortizationTable = (loanAmount, monthlyPayment, monthlyRate, months) => {
     let balance = loanAmount;
     amortizationData = [];
@@ -163,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Generación de PDF
+  // Generar PDF
   const generatePDF = () => {
     const doc = new jsPDF();
     const date = new Date().toLocaleDateString();
@@ -222,6 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const resetForm = () => {
     elements.developmentSelect.value = '';
+    elements.monthSelect.value = 'ene-25';
     elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
     elements.modelSelect.disabled = true;
     elements.propertyValue.value = '';
@@ -234,6 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
     hideError();
   };
 
-  // Inicialización
-  setup();
+  // Iniciar aplicación
+  init();
 });
