@@ -1,40 +1,143 @@
-// Definición de los modelos y precios por desarrollo (precios de Enero 2025)
-const DEVELOPMENTS = {
-  alta: [
-    { name: "Santa Clara", price: 1600000 },
-    { name: "Santa Lucía", price: 1900000 },
-    { name: "Santa Bárbara", price: 2450000 },
-  ],
-  vista: [
-    { name: "Ventura PA", price: 725000 },
-    { name: "Ventura PB", price: 855000 },
-    { name: "Cambria", price: 1275000 },
-    { name: "Catalina", price: 1560000 },
-  ],
-  bosques: [
-    { name: "Roble A", price: 4750000 },
-    { name: "Roble B", price: 4750000 },
-    { name: "Secuoya", price: 5850000 },
-  ],
-};
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Crédito Inmobiliario</title>
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #007bff;
+      --light-gray: #f5f5f5;
+      --white: #ffffff;
+    }
 
-// Maneja el cambio de desarrollo para llenar el select de modelos
-function handleDevelopmentChange() {
-  const developmentSelect = document.getElementById("developmentSelect");
-  const modelSelect = document.getElementById("modelSelect");
-  modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+    body {
+      background: var(--light-gray);
+      font-family: Arial, sans-serif;
+      margin: 1rem;
+    }
 
-  const selectedDev = developmentSelect.value;
-  if (selectedDev) {
-    modelSelect.disabled = false;
-    DEVELOPMENTS[selectedDev].forEach((model) => {
-      const option = document.createElement("option");
-      option.value = model.price;
-      option.textContent = `${model.name} - $${model.price.toLocaleString('es-MX')}`;
-      modelSelect.appendChild(option);
-    });
-  } else {
-    modelSelect.disabled = true;
-  }
-  validateFields();
+    header {
+      background: var(--primary-color);
+      color: var(--white);
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    input,
+    select {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
 }
+
+<div class="container">
+  <h2>Calcule préstamo</h2>
+  <p>Complete los siguientes campos para realizar la simulación de un crédito.</p>
+
+  <div class="form-group">
+    <label for="developmentSelect">Desarrollo</label>
+    <select id="developmentSelect" onchange="handleDevelopmentChange()">
+      <option value="" disabled selected>Elige un desarrollo</option>
+      <option value="alto">Alta California</option>
+      <option value="vista">Vista California</option>
+      <option value="bosques">Bosques California</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="modelSelect">Modelo</label>
+    <select id="modelSelect" onchange="validateFields()">
+      <option value="" disabled selected>Elige un modelo</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="propertyValue">Valor de la propiedad (MXN)</label>
+    <input 
+      type="number"
+      id="propertyValue"
+      placeholder="Ej. 2500000"
+      oninput="validateFields()"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="downPayment">Pago inicial (MXN)</label>
+    <input 
+      type="number"
+      id="downPayment"
+      placeholder="Ej. 500000"
+      oninput="validateFields()"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="bankSelect">Institución Financiera</label>
+    <select id="bankSelect" onchange="validateFields()">
+      <option value="" disabled selected>Elige una institución</option>
+      <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
+      <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
+      <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
+      <option value="santander" data-rate="8.85">Santander ~ 8.85%</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="extraPayment">Pago extra mensual (MXN)</label>
+    <input 
+      type="number"
+      id="extraPayment"
+      placeholder="Ej. 2000"
+      oninput="validateFields()"
+    />
+  </div>
+
+  <div class="form-group">
+    <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>
+      Calcular creditito
+    </button>
+    <button class="btn" id="toggleAmortTable" onclick="toggleAmortTable()">
+      Ver/ocultar tables de amortización
+    </button>
+
+  <div id="resultsSection" class="results">
+    <h3>Resultados de la Simulación</h3>
+    <p id="bankName"></p>
+    <p id="interestRate"></p>
+    <p id="loanAmount"></p>
+    <p id="monthlyPayment"></p>
+    <p id="totalPayment"></p>
+    <p id="simulationDate" style="font-style: italic;"></p>
+
+    <button class="btn" id="resultsSection" onclick="toggleAmortTable()">
+      <h3>Tabla de Amortización</h3>
+      <table id="amortizationTable">
+        <thead>
+          <tr>
+            <th>Año</th>
+            <th>Pago Anual</th>
+            <th>Intereses</th>
+            <th>Capital</th>
+            <th>Saldo Restante</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
