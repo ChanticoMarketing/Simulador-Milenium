@@ -40,21 +40,19 @@ function handleDevelopmentChange() {
   const developmentSelect = document.getElementById("developmentSelect");
   const modelSelect = document.getElementById("modelSelect");
 
+  // Limpiar modelos previos y habilitar el select
   modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+  modelSelect.disabled = false;
 
   const selectedDev = developmentSelect.value;
   if (selectedDev) {
-    modelSelect.disabled = false;
     DEVELOPMENTS[selectedDev].models.forEach((model) => {
       const option = document.createElement("option");
       option.value = model.name;
       option.textContent = model.name;
       modelSelect.appendChild(option);
     });
-  } else {
-    modelSelect.disabled = true;
   }
-  validateFields();
 }
 
 // Función para actualizar el precio de la propiedad basado en el modelo y el mes actual
@@ -74,88 +72,4 @@ function handleModelChange() {
       document.getElementById("currentMonthDisplay").textContent = `Precio correspondiente a: ${currentMonth}`;
     }
   }
-  validateFields();
-}
-
-// Función para validar los campos y habilitar el botón de cálculo
-function validateFields() {
-  const propertyValue = document.getElementById("propertyValue").value;
-  const downPayment = document.getElementById("downPayment").value;
-  const loanYears = document.getElementById("loanYears").value;
-  const bankSelect = document.getElementById("bankSelect").value;
-  const calcBtn = document.getElementById("calcBtn");
-
-  if (propertyValue && downPayment && loanYears && bankSelect) {
-    calcBtn.disabled = false;
-  } else {
-    calcBtn.disabled = true;
-  }
-}
-
-// Calcula el préstamo y muestra los resultados
-function calculateLoan() {
-  const propertyValue = parseFloat(document.getElementById("propertyValue").value);
-  const downPayment = parseFloat(document.getElementById("downPayment").value);
-  const loanYears = parseInt(document.getElementById("loanYears").value);
-  const bankSelect = document.getElementById("bankSelect");
-  const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-  const annualInterestRate = parseFloat(selectedOption.getAttribute("data-rate")) / 100;
-
-  const loanAmount = propertyValue - downPayment;
-  if (loanAmount <= 0) {
-    alert("El pago inicial no puede ser mayor o igual al valor de la propiedad.");
-    return;
-  }
-
-  const monthlyInterestRate = annualInterestRate / 12;
-  const numberOfMonths = loanYears * 12;
-  const monthlyPayment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) /
-    (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
-
-  const totalPayment = monthlyPayment * numberOfMonths;
-
-  document.getElementById("bankName").textContent = `Banco seleccionado: ${selectedOption.text}`;
-  document.getElementById("interestRate").textContent = `Tasa de interés anual: ${(annualInterestRate * 100).toFixed(2)}%`;
-  document.getElementById("loanAmount").textContent = `Monto del crédito: MXN $${loanAmount.toLocaleString("es-MX")}`;
-  document.getElementById("monthlyPayment").textContent = `Pago mensual aprox.: MXN $${monthlyPayment.toFixed(2)}`;
-  document.getElementById("totalPayment").textContent = `Pago total (aprox.): MXN $${totalPayment.toFixed(2)}`;
-  document.getElementById("simulationDate").textContent = `Fecha de simulación: ${new Date().toLocaleDateString("es-MX")}`;
-
-  document.getElementById("resultsSection").style.display = "block";
-}
-
-// Función para generar el PDF
-function generatePDF() {
-  const doc = new jsPDF('p', 'pt', 'letter');
-  const title = "Reporte de Simulación de Crédito Inmobiliario";
-
-  doc.setFontSize(14);
-  doc.text(title, 40, 40);
-
-  const bankName = document.getElementById("bankName").textContent;
-  const interestRate = document.getElementById("interestRate").textContent;
-  const loanAmount = document.getElementById("loanAmount").textContent;
-  const monthlyPayment = document.getElementById("monthlyPayment").textContent;
-  const totalPayment = document.getElementById("totalPayment").textContent;
-
-  doc.setFontSize(12);
-  doc.text(bankName, 40, 70);
-  doc.text(interestRate, 40, 90);
-  doc.text(loanAmount, 40, 110);
-  doc.text(monthlyPayment, 40, 130);
-  doc.text(totalPayment, 40, 150);
-
-  doc.save("SimulacionCredito.pdf");
-}
-
-// Función para limpiar el formulario
-function resetForm() {
-  document.getElementById("developmentSelect").value = "";
-  document.getElementById("modelSelect").innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
-  document.getElementById("propertyValue").value = "";
-  document.getElementById("downPayment").value = "";
-  document.getElementById("loanYears").value = "";
-  document.getElementById("bankSelect").value = "";
-  document.getElementById("calcBtn").disabled = true;
-  document.getElementById("resultsSection").style.display = "none";
 }
