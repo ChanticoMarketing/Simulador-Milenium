@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Crédito Milenium</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Librerías externas para PDF -->
@@ -34,12 +34,26 @@
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" disabled>
           <option value="" disabled selected>Elige un modelo</option>
+
+          <!-- Modelos de Alta California -->
+          <option value="1700000" data-dev="alta" hidden>Santa Clara - $1,700,000</option>
+          <option value="1800000" data-dev="alta" hidden>San Diego - $1,800,000</option>
+          <option value="1600000" data-dev="alta" hidden>El Dorado - $1,600,000</option>
+
+          <!-- Modelos de Vista California -->
+          <option value="750000" data-dev="vista" hidden>Ventura PA - $750,000</option>
+          <option value="820000" data-dev="vista" hidden>Monterrey - $820,000</option>
+          <option value="880000" data-dev="vista" hidden>Pacific Heights - $880,000</option>
+
+          <!-- Modelos de Bosques California -->
+          <option value="4900000" data-dev="bosques" hidden>Roble A - $4,900,000</option>
+          <option value="5100000" data-dev="bosques" hidden>Encino B - $5,100,000</option>
+          <option value="5300000" data-dev="bosques" hidden>Pino C - $5,300,000</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <!-- Se deja readonly; si deseas que el usuario pueda editarlo, quita el "readonly". -->
         <input type="number" id="propertyValue" placeholder="Selecciona un modelo" readonly>
       </div>
 
