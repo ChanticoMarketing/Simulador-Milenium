@@ -18,6 +18,7 @@
     <p>Complete los siguientes campos para realizar la simulación de su crédito.</p>
 
     <div class="form-grid">
+      <!-- Selector de mes -->
       <div class="form-group">
         <label for="monthSelect">Mes de simulación</label>
         <select id="monthSelect">
@@ -27,6 +28,7 @@
         </select>
       </div>
 
+      <!-- Desarrollo -->
       <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
         <select id="developmentSelect">
@@ -37,6 +39,7 @@
         </select>
       </div>
 
+      <!-- Modelos -->
       <div class="form-group">
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" disabled>
@@ -44,41 +47,49 @@
         </select>
       </div>
 
+      <!-- Valor de la propiedad -->
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
         <input type="number" id="propertyValue" readonly>
       </div>
 
+      <!-- Pago inicial -->
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
         <input type="number" id="downPayment" placeholder="Ej. 500000" min="0">
       </div>
 
+      <!-- Plazo del crédito -->
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
         <input type="number" id="loanYears" placeholder="Ej. 20" min="1" max="30">
       </div>
 
+      <!-- Instituciones financieras actualizadas -->
       <div class="form-group">
         <label for="bankSelect">Institución Financiera</label>
         <select id="bankSelect">
           <option value="" disabled selected>Elige una institución</option>
           <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
           <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
-          <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
-          <option value="scotiabank" data-rate="9.50">Scotiabank ~ 9.50%</option>
-          <option value="hsbc" data-rate="9.95">HSBC ~ 9.95%</option>
+          <option value="bbva" data-rate="9.55">BBVA ~ 9.55%</option>
+          <option value="scotiabank" data-rate="14.0">Scotiabank ~ 14.0%</option>
+          <option value="banorte" data-rate="11.58">Banorte ~ 11.58%</option>
+          <option value="hsbc" data-rate="12.25">HSBC ~ 12.25%</option>
         </select>
       </div>
     </div>
 
+    <!-- Mensajes de error -->
     <div id="errorMessage" class="error-message" style="display: none;"></div>
 
+    <!-- Botones principales -->
     <div class="button-group">
       <button class="btn btn-primary" id="calcBtn" disabled>Calcular crédito</button>
       <button class="btn btn-secondary" id="resetBtn">Limpiar campos</button>
     </div>
 
+    <!-- Resultados de la simulación -->
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
       <div class="results-grid">
@@ -90,11 +101,13 @@
         <p class="result-item" id="simulationDate"></p>
       </div>
 
+      <!-- Botones de reporte -->
       <div class="button-group">
         <button class="btn btn-primary" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
         <button class="btn btn-primary" id="generatePDFBtn">Descargar reporte en PDF</button>
       </div>
 
+      <!-- Tabla de amortización -->
       <div id="amortSection" style="display: none;">
         <h3>Tabla de Amortización</h3>
         <div class="table-container">
