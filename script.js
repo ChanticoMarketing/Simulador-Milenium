@@ -1,143 +1,161 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Crédito Inmobiliario</title>
-  <style>
-    :root {
-      --primary-color: #003366;
-      --secondary-color: #007bff;
-      --light-gray: #f5f5f5;
-      --white: #ffffff;
-    }
+// Definición de los modelos y precios por desarrollo, con actualización para Ene, Feb, Mar 2025
+const DEVELOPMENTS = {
+  alta: {
+    name: "Alta California",
+    models: [
+      { name: "Santa Clara", prices: { "Enero": 1600000, "Febrero": 1650000, "Marzo": 1700000 } },
+      { name: "Santa Lucía", prices: { "Enero": 1900000, "Febrero": 1950000, "Marzo": 2000000 } },
+      { name: "Santa Bárbara", prices: { "Enero": 2450000, "Febrero": 2500000, "Marzo": 2600000 } }
+    ]
+  },
+  vista: {
+    name: "Vista California",
+    models: [
+      { name: "Ventura PA", prices: { "Enero": 725000, "Febrero": 750000, "Marzo": 775000 } },
+      { name: "Ventura PB", prices: { "Enero": 855000, "Febrero": 870000, "Marzo": 890000 } },
+      { name: "Cambria", prices: { "Enero": 1275000, "Febrero": 1300000, "Marzo": 1320000 } },
+      { name: "Catalina", prices: { "Enero": 1560000, "Febrero": 1580000, "Marzo": 1600000 } }
+    ]
+  },
+  bosques: {
+    name: "Bosques California",
+    models: [
+      { name: "Roble A", prices: { "Enero": 4750000, "Febrero": 4850000, "Marzo": 4900000 } },
+      { name: "Roble B", prices: { "Enero": 4750000, "Febrero": 4850000, "Marzo": 4900000 } },
+      { name: "Secuoya", prices: { "Enero": 5850000, "Febrero": 5925000, "Marzo": 6050000 } }
+    ]
+  }
+};
 
-    body {
-      background: var(--light-gray);
-      font-family: Arial, sans-serif;
-      margin: 1rem;
-    }
-
-    header {
-      background: var(--primary-color);
-      color: var(--white);
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .form-group {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .form-group label {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-    }
-
-    input,
-    select {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+// Función para obtener el mes actual y convertirlo en nombre
+function getCurrentMonthName() {
+  const today = new Date();
+  const monthIndex = today.getMonth(); // Enero = 0, Febrero = 1, Marzo = 2
+  const monthNames = ["Enero", "Febrero", "Marzo"];
+  return monthNames[monthIndex] || "Marzo"; // Si está fuera de rango, tomar Marzo por defecto
 }
 
-<div class="container">
-  <h2>Calcule préstamo</h2>
-  <p>Complete los siguientes campos para realizar la simulación de un crédito.</p>
+// Función para manejar el cambio de desarrollo y actualizar modelos
+function handleDevelopmentChange() {
+  const developmentSelect = document.getElementById("developmentSelect");
+  const modelSelect = document.getElementById("modelSelect");
 
-  <div class="form-group">
-    <label for="developmentSelect">Desarrollo</label>
-    <select id="developmentSelect" onchange="handleDevelopmentChange()">
-      <option value="" disabled selected>Elige un desarrollo</option>
-      <option value="alto">Alta California</option>
-      <option value="vista">Vista California</option>
-      <option value="bosques">Bosques California</option>
-    </select>
-  </div>
+  modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
 
-  <div class="form-group">
-    <label for="modelSelect">Modelo</label>
-    <select id="modelSelect" onchange="validateFields()">
-      <option value="" disabled selected>Elige un modelo</option>
-    </select>
-  </div>
+  const selectedDev = developmentSelect.value;
+  if (selectedDev) {
+    modelSelect.disabled = false;
+    DEVELOPMENTS[selectedDev].models.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.name;
+      option.textContent = model.name;
+      modelSelect.appendChild(option);
+    });
+  } else {
+    modelSelect.disabled = true;
+  }
+  validateFields();
+}
 
-  <div class="form-group">
-    <label for="propertyValue">Valor de la propiedad (MXN)</label>
-    <input 
-      type="number"
-      id="propertyValue"
-      placeholder="Ej. 2500000"
-      oninput="validateFields()"
-    />
-  </div>
+// Función para actualizar el precio de la propiedad basado en el modelo y el mes actual
+function handleModelChange() {
+  const developmentSelect = document.getElementById("developmentSelect").value;
+  const modelSelect = document.getElementById("modelSelect").value;
+  const propertyValueInput = document.getElementById("propertyValue");
 
-  <div class="form-group">
-    <label for="downPayment">Pago inicial (MXN)</label>
-    <input 
-      type="number"
-      id="downPayment"
-      placeholder="Ej. 500000"
-      oninput="validateFields()"
-    />
-  </div>
+  if (developmentSelect && modelSelect) {
+    const selectedModel = DEVELOPMENTS[developmentSelect].models.find(
+      (model) => model.name === modelSelect
+    );
 
-  <div class="form-group">
-    <label for="bankSelect">Institución Financiera</label>
-    <select id="bankSelect" onchange="validateFields()">
-      <option value="" disabled selected>Elige una institución</option>
-      <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
-      <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
-      <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
-      <option value="santander" data-rate="8.85">Santander ~ 8.85%</option>
-    </select>
-  </div>
+    if (selectedModel) {
+      const currentMonth = getCurrentMonthName();
+      propertyValueInput.value = selectedModel.prices[currentMonth];
+      document.getElementById("currentMonthDisplay").textContent = `Precio correspondiente a: ${currentMonth}`;
+    }
+  }
+  validateFields();
+}
 
-  <div class="form-group">
-    <label for="extraPayment">Pago extra mensual (MXN)</label>
-    <input 
-      type="number"
-      id="extraPayment"
-      placeholder="Ej. 2000"
-      oninput="validateFields()"
-    />
-  </div>
+// Función para validar los campos y habilitar el botón de cálculo
+function validateFields() {
+  const propertyValue = document.getElementById("propertyValue").value;
+  const downPayment = document.getElementById("downPayment").value;
+  const loanYears = document.getElementById("loanYears").value;
+  const bankSelect = document.getElementById("bankSelect").value;
+  const calcBtn = document.getElementById("calcBtn");
 
-  <div class="form-group">
-    <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>
-      Calcular creditito
-    </button>
-    <button class="btn" id="toggleAmortTable" onclick="toggleAmortTable()">
-      Ver/ocultar tables de amortización
-    </button>
+  if (propertyValue && downPayment && loanYears && bankSelect) {
+    calcBtn.disabled = false;
+  } else {
+    calcBtn.disabled = true;
+  }
+}
 
-  <div id="resultsSection" class="results">
-    <h3>Resultados de la Simulación</h3>
-    <p id="bankName"></p>
-    <p id="interestRate"></p>
-    <p id="loanAmount"></p>
-    <p id="monthlyPayment"></p>
-    <p id="totalPayment"></p>
-    <p id="simulationDate" style="font-style: italic;"></p>
+// Calcula el préstamo y muestra los resultados
+function calculateLoan() {
+  const propertyValue = parseFloat(document.getElementById("propertyValue").value);
+  const downPayment = parseFloat(document.getElementById("downPayment").value);
+  const loanYears = parseInt(document.getElementById("loanYears").value);
+  const bankSelect = document.getElementById("bankSelect");
+  const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+  const annualInterestRate = parseFloat(selectedOption.getAttribute("data-rate")) / 100;
 
-    <button class="btn" id="resultsSection" onclick="toggleAmortTable()">
-      <h3>Tabla de Amortización</h3>
-      <table id="amortizationTable">
-        <thead>
-          <tr>
-            <th>Año</th>
-            <th>Pago Anual</th>
-            <th>Intereses</th>
-            <th>Capital</th>
-            <th>Saldo Restante</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
-  </div>
+  const loanAmount = propertyValue - downPayment;
+  if (loanAmount <= 0) {
+    alert("El pago inicial no puede ser mayor o igual al valor de la propiedad.");
+    return;
+  }
 
-  <script src="script.js" defer></script>
-</body>
-</html>
+  const monthlyInterestRate = annualInterestRate / 12;
+  const numberOfMonths = loanYears * 12;
+  const monthlyPayment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) /
+    (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
+
+  const totalPayment = monthlyPayment * numberOfMonths;
+
+  document.getElementById("bankName").textContent = `Banco seleccionado: ${selectedOption.text}`;
+  document.getElementById("interestRate").textContent = `Tasa de interés anual: ${(annualInterestRate * 100).toFixed(2)}%`;
+  document.getElementById("loanAmount").textContent = `Monto del crédito: MXN $${loanAmount.toLocaleString("es-MX")}`;
+  document.getElementById("monthlyPayment").textContent = `Pago mensual aprox.: MXN $${monthlyPayment.toFixed(2)}`;
+  document.getElementById("totalPayment").textContent = `Pago total (aprox.): MXN $${totalPayment.toFixed(2)}`;
+  document.getElementById("simulationDate").textContent = `Fecha de simulación: ${new Date().toLocaleDateString("es-MX")}`;
+
+  document.getElementById("resultsSection").style.display = "block";
+}
+
+// Función para generar el PDF
+function generatePDF() {
+  const doc = new jsPDF('p', 'pt', 'letter');
+  const title = "Reporte de Simulación de Crédito Inmobiliario";
+
+  doc.setFontSize(14);
+  doc.text(title, 40, 40);
+
+  const bankName = document.getElementById("bankName").textContent;
+  const interestRate = document.getElementById("interestRate").textContent;
+  const loanAmount = document.getElementById("loanAmount").textContent;
+  const monthlyPayment = document.getElementById("monthlyPayment").textContent;
+  const totalPayment = document.getElementById("totalPayment").textContent;
+
+  doc.setFontSize(12);
+  doc.text(bankName, 40, 70);
+  doc.text(interestRate, 40, 90);
+  doc.text(loanAmount, 40, 110);
+  doc.text(monthlyPayment, 40, 130);
+  doc.text(totalPayment, 40, 150);
+
+  doc.save("SimulacionCredito.pdf");
+}
+
+// Función para limpiar el formulario
+function resetForm() {
+  document.getElementById("developmentSelect").value = "";
+  document.getElementById("modelSelect").innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+  document.getElementById("propertyValue").value = "";
+  document.getElementById("downPayment").value = "";
+  document.getElementById("loanYears").value = "";
+  document.getElementById("bankSelect").value = "";
+  document.getElementById("calcBtn").disabled = true;
+  document.getElementById("resultsSection").style.display = "none";
+}
