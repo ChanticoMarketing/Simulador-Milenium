@@ -1,177 +1,88 @@
-/* 🎨 Variables de colores */
 :root {
   --primary-color: #003366;
   --secondary-color: #007bff;
   --light-gray: #f5f5f5;
   --white: #ffffff;
-  --dark-gray: #444;
-  --hover-color: #0056b3;
-  --border-color: #ddd;
-  --table-header: #007bff;
-  --table-row: #f9f9f9;
-}
-
-/* 🌍 Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Arial", sans-serif;
 }
 
 body {
   background: var(--light-gray);
-  color: var(--dark-gray);
-  line-height: 1.6;
+  font-family: Arial, sans-serif;
+  margin: 0;
 }
 
-/* 🏡 ENCABEZADO */
 header {
   background: var(--primary-color);
   color: var(--white);
   text-align: center;
-  padding: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: bold;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
 }
 
-/* 📦 CONTENEDOR PRINCIPAL */
 .container {
-  max-width: 900px;
-  margin: 3rem auto;
+  max-width: 800px;
+  margin: 2rem auto;
   padding: 2rem;
   background: var(--white);
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* 🔹 TÍTULOS */
-.container h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-}
-
-/* 📋 FORMULARIO */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  text-align: left;
 }
 
-.form-group label {
+label {
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: var(--dark-gray);
 }
 
-.form-group input,
-.form-group select {
-  padding: 0.7rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: all 0.3s ease-in-out;
+input, select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.form-group input:focus,
-.form-group select:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
-  outline: none;
-}
-
-/* 🎛️ BOTONES */
 .btn {
-  display: inline-block;
   background: var(--secondary-color);
   color: var(--white);
-  padding: 0.8rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease-in-out;
-  margin: 0.5rem;
 }
 
-.btn:hover {
-  background: var(--hover-color);
-}
-
-/* 📊 SECCIÓN DE RESULTADOS */
 .results {
   margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--light-gray);
-  border-radius: 8px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  background: #e9ecef;
+  padding: 1rem;
+  border-radius: 4px;
 }
 
-.results h3 {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-/* 📋 TABLA DE AMORTIZACIÓN */
 table {
   width: 100%;
-  border-collapse: collapse;
   margin-top: 1rem;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
   text-align: center;
-  border-radius: 10px;
-  overflow: hidden;
+  padding: 0.5rem;
 }
 
-table th {
-  background: var(--table-header);
-  color: var(--white);
-  padding: 1rem;
-  font-size: 1rem;
-}
-
-table td {
-  padding: 0.8rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-table tr:nth-child(even) {
-  background: var(--table-row);
-}
-
-/* 📊 GRÁFICO */
 .chart-container {
   margin-top: 2rem;
   text-align: center;
 }
 
-#chart {
-  max-width: 100%;
-  height: 300px;
-}
-
-/* 📱 RESPONSIVE */
-@media (max-width: 768px) {
-  .container {
-    width: 90%;
-    padding: 1.5rem;
-  }
-
-  .form-grid {
-    display: block;
-  }
-
-  table {
-    font-size: 0.9rem;
-  }
+#toggleAmortBtn {
+  display: none;
 }
