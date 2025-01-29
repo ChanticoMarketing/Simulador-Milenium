@@ -165,4 +165,3 @@ function generatePDF() {
   doc.autoTable({ head: [tableColumns], body: tableRows, startY: 200, theme: "grid", styles: { fontSize: 8 } });
   doc.save("SimulacionCredito.pdf");
 }
-
