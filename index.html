@@ -22,7 +22,7 @@
     <div class="form-grid">
       <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
-        <select id="developmentSelect" onchange="handleDevelopmentChange()">
+        <select id="developmentSelect">
           <option value="" disabled selected>Elige un desarrollo</option>
           <option value="alta">Alta California</option>
           <option value="vista">Vista California</option>
@@ -32,7 +32,7 @@
 
       <div class="form-group">
         <label for="modelSelect">Modelo</label>
-        <select id="modelSelect" onchange="handleModelChange()" disabled>
+        <select id="modelSelect" disabled>
           <option value="" disabled selected>Elige un modelo</option>
         </select>
       </div>
@@ -44,17 +44,17 @@
 
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
-        <input type="number" id="downPayment" placeholder="Ej. 500000" oninput="validateFields()">
+        <input type="number" id="downPayment" placeholder="Ej. 500000">
       </div>
 
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20" oninput="validateFields()">
+        <input type="number" id="loanYears" placeholder="Ej. 20">
       </div>
 
       <div class="form-group">
         <label for="bankSelect">Institución Financiera</label>
-        <select id="bankSelect" onchange="validateFields()">
+        <select id="bankSelect">
           <option value="" disabled selected>Elige una institución</option>
           <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
           <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
@@ -65,8 +65,8 @@
       </div>
     </div>
 
-    <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>Calcular crédito</button>
-    <button class="btn" onclick="resetForm()">Limpiar campos</button>
+    <button class="btn" id="calcBtn" disabled>Calcular crédito</button>
+    <button class="btn" id="resetBtn">Limpiar campos</button>
 
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
@@ -77,8 +77,8 @@
       <p id="totalPayment"></p>
       <p id="simulationDate" style="font-style: italic;"></p>
 
-      <button class="btn" id="toggleAmortBtn" onclick="toggleAmortTable()" style="display: none;">Ver/ocultar tabla de amortización</button>
-      <button class="btn" onclick="generatePDF()">Descargar reporte en PDF</button>
+      <button class="btn" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
+      <button class="btn" id="generatePDFBtn">Descargar reporte en PDF</button>
 
       <div id="amortSection" style="display: none;">
         <h3>Tabla de Amortización</h3>
