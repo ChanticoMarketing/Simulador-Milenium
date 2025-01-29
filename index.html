@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Crédito Milenium</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Librerías externas para PDF -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@1.5.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28"></script>
 </head>
 <body>
-
   <header>
     <h1>Simulador de Crédito Milenium</h1>
   </header>
@@ -34,21 +32,6 @@
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" disabled>
           <option value="" disabled selected>Elige un modelo</option>
-
-          <!-- Modelos de Alta California -->
-          <option value="1700000" data-dev="alta" hidden>Santa Clara - $1,700,000</option>
-          <option value="1800000" data-dev="alta" hidden>San Diego - $1,800,000</option>
-          <option value="1600000" data-dev="alta" hidden>El Dorado - $1,600,000</option>
-
-          <!-- Modelos de Vista California -->
-          <option value="750000" data-dev="vista" hidden>Ventura PA - $750,000</option>
-          <option value="820000" data-dev="vista" hidden>Monterrey - $820,000</option>
-          <option value="880000" data-dev="vista" hidden>Pacific Heights - $880,000</option>
-
-          <!-- Modelos de Bosques California -->
-          <option value="4900000" data-dev="bosques" hidden>Roble A - $4,900,000</option>
-          <option value="5100000" data-dev="bosques" hidden>Encino B - $5,100,000</option>
-          <option value="5300000" data-dev="bosques" hidden>Pino C - $5,300,000</option>
         </select>
       </div>
 
@@ -59,12 +42,12 @@
 
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
-        <input type="number" id="downPayment" placeholder="Ej. 500000">
+        <input type="number" id="downPayment" placeholder="Ej. 500000" min="0">
       </div>
 
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20">
+        <input type="number" id="loanYears" placeholder="Ej. 20" min="1" max="30">
       </div>
 
       <div class="form-group">
@@ -80,35 +63,45 @@
       </div>
     </div>
 
-    <button class="btn" id="calcBtn" disabled>Calcular crédito</button>
-    <button class="btn" id="resetBtn">Limpiar campos</button>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <div class="button-group">
+      <button class="btn" id="calcBtn" disabled>Calcular crédito</button>
+      <button class="btn" id="resetBtn">Limpiar campos</button>
+    </div>
 
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
-      <p id="bankName"></p>
-      <p id="interestRate"></p>
-      <p id="loanAmount"></p>
-      <p id="monthlyPayment"></p>
-      <p id="totalPayment"></p>
-      <p id="simulationDate" style="font-style: italic;"></p>
+      <div class="results-grid">
+        <p class="result-item"><span>Institución:</span> <span id="bankName"></span></p>
+        <p class="result-item"><span>Tasa de interés:</span> <span id="interestRate"></span></p>
+        <p class="result-item"><span>Monto del préstamo:</span> <span id="loanAmount"></span></p>
+        <p class="result-item"><span>Pago mensual:</span> <span id="monthlyPayment"></span></p>
+        <p class="result-item"><span>Pago total:</span> <span id="totalPayment"></span></p>
+        <p class="result-item" id="simulationDate"></p>
+      </div>
 
-      <button class="btn" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
-      <button class="btn" id="generatePDFBtn">Descargar reporte en PDF</button>
+      <div class="button-group">
+        <button class="btn" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
+        <button class="btn" id="generatePDFBtn">Descargar reporte en PDF</button>
+      </div>
 
       <div id="amortSection" style="display: none;">
         <h3>Tabla de Amortización</h3>
-        <table id="amortizationTable">
-          <thead>
-            <tr>
-              <th>Año</th>
-              <th>Pago Anual</th>
-              <th>Intereses</th>
-              <th>Capital</th>
-              <th>Saldo Restante</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-container">
+          <table id="amortizationTable">
+            <thead>
+              <tr>
+                <th>Año</th>
+                <th>Pago Anual</th>
+                <th>Intereses</th>
+                <th>Capital</th>
+                <th>Saldo Restante</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
