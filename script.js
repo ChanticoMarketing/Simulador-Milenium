@@ -19,7 +19,10 @@ const DEVELOPMENTS = {
 };
 
 // Obtiene el mes actual
-const currentMonth = new Date().getMonth() + 1; // Enero = 1, Febrero = 2, etc.
+const currentMonth = new Date().getMonth() + 1;
+
+// Variable para almacenar los datos de amortización
+let amortizationData = [];
 
 function handleDevelopmentChange() {
   const modelSelect = document.getElementById("modelSelect");
@@ -95,6 +98,9 @@ function calculateLoan() {
   document.getElementById("resultsSection").style.display = "block";
 
   amortizationData = generateAmortization(loanAmount, monthlyInterestRate, loanYears, monthlyPayment);
+
+  // Mostrar el botón de la tabla de amortización
+  document.getElementById("toggleAmortBtn").style.display = "inline-block";
 }
 
 // Genera la tabla de amortización
@@ -133,7 +139,18 @@ function generateAmortization(principal, monthlyInterestRate, numYears, monthlyP
   return amortizationData;
 }
 
-// Muestra la tabla de amortización
+// Muestra/oculta la tabla de amortización
+function toggleAmortTable() {
+  const amortSection = document.getElementById("amortSection");
+  if (amortSection.style.display === "none" || amortSection.style.display === "") {
+    amortSection.style.display = "block";
+    fillAmortizationTable();
+  } else {
+    amortSection.style.display = "none";
+  }
+}
+
+// Llena la tabla de amortización
 function fillAmortizationTable() {
   const tableBody = document.querySelector("#amortizationTable tbody");
   tableBody.innerHTML = "";
@@ -149,19 +166,4 @@ function fillAmortizationTable() {
     `;
     tableBody.appendChild(tr);
   });
-}
-
-// Genera el PDF con la tabla de amortización
-function generatePDF() {
-  const doc = new jsPDF('p', 'pt', 'letter');
-  doc.setFontSize(14);
-  doc.text("Reporte de Simulación de Crédito Inmobiliario", 40, 40);
-
-  const tableColumns = ["Año", "Pago Anual", "Intereses", "Capital", "Saldo Restante"];
-  const tableRows = amortizationData.map(row => [
-    row.year, row.annualPayment, row.interestPaid, row.capitalPaid, row.remainingBalance
-  ]);
-
-  doc.autoTable({ head: [tableColumns], body: tableRows, startY: 200, theme: "grid", styles: { fontSize: 8 } });
-  doc.save("SimulacionCredito.pdf");
 }
