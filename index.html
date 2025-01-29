@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Crédito Inmobiliario</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Librerías externas -->
@@ -39,17 +39,17 @@
 
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <input type="number" id="propertyValue" placeholder="Ej. 2500000" readonly />
+        <input type="number" id="propertyValue" placeholder="Selecciona un modelo" readonly>
       </div>
 
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
-        <input type="number" id="downPayment" placeholder="Ej. 500000" oninput="validateFields()" />
+        <input type="number" id="downPayment" placeholder="Ej. 500000" oninput="validateFields()">
       </div>
 
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20" oninput="validateFields()" />
+        <input type="number" id="loanYears" placeholder="Ej. 20" oninput="validateFields()">
       </div>
 
       <div class="form-group">
@@ -77,7 +77,24 @@
       <p id="totalPayment"></p>
       <p id="simulationDate" style="font-style: italic;"></p>
 
+      <button class="btn" id="toggleAmortBtn" onclick="toggleAmortTable()" style="display: none;">Ver/ocultar tabla de amortización</button>
       <button class="btn" onclick="generatePDF()">Descargar reporte en PDF</button>
+
+      <div id="amortSection" style="display: none;">
+        <h3>Tabla de Amortización</h3>
+        <table id="amortizationTable">
+          <thead>
+            <tr>
+              <th>Año</th>
+              <th>Pago Anual</th>
+              <th>Intereses</th>
+              <th>Capital</th>
+              <th>Saldo Restante</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
