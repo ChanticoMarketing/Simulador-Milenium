@@ -6,7 +6,7 @@
   <title>Simulador de Crédito Milenium</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <header>
@@ -28,7 +28,7 @@
         </select>
       </div>
 
-      <!-- Desarrollo -->
+      <!-- Selector de desarrollo -->
       <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
         <select id="developmentSelect">
@@ -39,7 +39,7 @@
         </select>
       </div>
 
-      <!-- Modelos -->
+      <!-- Selector de modelo -->
       <div class="form-group">
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" disabled>
@@ -65,7 +65,7 @@
         <input type="number" id="loanYears" placeholder="Ej. 20" min="1" max="30">
       </div>
 
-      <!-- Instituciones financieras actualizadas -->
+      <!-- Instituciones financieras -->
       <div class="form-group">
         <label for="bankSelect">Institución Financiera</label>
         <select id="bankSelect">
@@ -89,7 +89,7 @@
       <button class="btn btn-secondary" id="resetBtn">Limpiar campos</button>
     </div>
 
-    <!-- Resultados de la simulación -->
+    <!-- Sección de resultados -->
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
       <div class="results-grid">
