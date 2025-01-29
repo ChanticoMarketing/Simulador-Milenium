@@ -4,8 +4,95 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simulador de Crédito Inmobiliario</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Librerías externas -->
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #007bff;
+      --light-gray: #f5f5f5;
+      --white: #ffffff;
+    }
+
+    body {
+      background: var(--light-gray);
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    header {
+      background: var(--primary-color);
+      color: var(--white);
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    input,
+    select {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .btn {
+      background: var(--secondary-color);
+      color: var(--white);
+      padding: 0.5rem 1rem;
+      border: none;
+      margin-top: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .results {
+      margin-top: 2rem;
+      background: #e9ecef;
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .chart-container {
+      margin-top: 2rem;
+      text-align: center;
+    }
+  </style>
+  <!-- Librerías externas con versiones específicas -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@1.5.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28"></script>
 </head>
@@ -32,24 +119,43 @@
       <div class="form-group">
         <label for="modelSelect">Modelo</label>
         <select id="modelSelect" onchange="handleModelChange()" disabled>
-          <option value="" disabled selected>Elige un modelo</option>
+          <option id="defaultModelOption" value="" disabled selected>Elige un modelo</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <input type="number" id="propertyValue" readonly />
-        <p id="currentMonthDisplay"></p>
+        <input 
+          type="number"
+          id="propertyValue"
+          placeholder="Selecciona un modelo"
+          disabled
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="downPayment">Pago inicial (MXN)</label>
+        <input
+          type="number"
+          id="downPayment"
+          placeholder="Ej. 500000"
+          oninput="validateFields()"
+        />
       </div>
 
       <div class="form-group">
         <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20" />
+        <input
+          type="number"
+          id="loanYears"
+          placeholder="Ej. 20"
+          oninput="validateFields()"
+        />
       </div>
 
       <div class="form-group">
         <label for="bankSelect">Institución Financiera</label>
-        <select id="bankSelect">
+        <select id="bankSelect" onchange="validateFields()">
           <option value="" disabled selected>Elige una institución</option>
           <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
           <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
@@ -59,8 +165,10 @@
       </div>
     </div>
 
-    <button class="btn" onclick="calculateLoan()">Calcular crédito</button>
-    <button class="btn" onclick="generatePDF()">Descargar PDF</button>
+    <button class="btn" id="calcBtn" onclick="calculateLoan()" disabled>
+      Calcular crédito
+    </button>
+    <button class="btn" onclick="resetForm()">Limpiar campos</button>
 
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
@@ -69,6 +177,30 @@
       <p id="loanAmount"></p>
       <p id="monthlyPayment"></p>
       <p id="totalPayment"></p>
+      <p id="simulationDate" style="font-style: italic;"></p>
+
+      <button class="btn" onclick="toggleAmortTable()">
+        Ver/ocultar tabla de amortización
+      </button>
+      <button class="btn" onclick="generatePDF()">
+        Descargar reporte en PDF
+      </button>
+
+      <div id="amortSection" style="display: none;">
+        <h3>Tabla de Amortización</h3>
+        <table id="amortizationTable">
+          <thead>
+            <tr>
+              <th>Año</th>
+              <th>Pago Anual</th>
+              <th>Intereses</th>
+              <th>Capital</th>
+              <th>Saldo Restante</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
