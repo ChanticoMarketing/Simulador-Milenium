@@ -41,6 +41,34 @@
         <input type="number" id="propertyValue" readonly />
         <p id="currentMonthDisplay"></p>
       </div>
+
+      <div class="form-group">
+        <label for="loanYears">Plazo del crédito (años)</label>
+        <input type="number" id="loanYears" placeholder="Ej. 20" />
+      </div>
+
+      <div class="form-group">
+        <label for="bankSelect">Institución Financiera</label>
+        <select id="bankSelect">
+          <option value="" disabled selected>Elige una institución</option>
+          <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
+          <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
+          <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
+          <option value="santander" data-rate="8.85">Santander ~ 8.85%</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" onclick="calculateLoan()">Calcular crédito</button>
+    <button class="btn" onclick="generatePDF()">Descargar PDF</button>
+
+    <div id="resultsSection" class="results" style="display: none;">
+      <h3>Resultados de la Simulación</h3>
+      <p id="bankName"></p>
+      <p id="interestRate"></p>
+      <p id="loanAmount"></p>
+      <p id="monthlyPayment"></p>
+      <p id="totalPayment"></p>
     </div>
   </div>
 
