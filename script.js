@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Elementos del DOM (completos)
   const elements = {
     monthSelect: document.getElementById('monthSelect'),
     developmentSelect: document.getElementById('developmentSelect'),
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     amortTableBody: document.querySelector('#amortizationTable tbody')
   };
 
+  // Base de datos completa de desarrollos
   const DEVELOPMENTS = {
     vista: {
       name: "Vista California",
@@ -52,13 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let amortizationData = [];
 
-  // Inicialización
+  // 1. Inicialización
   const init = () => {
     setupEventListeners();
     populateModels();
   };
 
-  // Llenar modelos
+  // 2. Llenado de modelos
   const populateModels = () => {
     elements.developmentSelect.addEventListener('change', () => {
       const selectedDev = elements.developmentSelect.value;
@@ -74,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Eventos
+  // 3. Configuración de eventos
   const setupEventListeners = () => {
     elements.modelSelect.addEventListener('change', updatePropertyValue);
     elements.monthSelect.addEventListener('change', updatePropertyValue);
@@ -87,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.generatePDFBtn.addEventListener('click', generatePDF);
   };
 
-  // Actualizar valor de la propiedad
+  // 4. Actualizar valor de propiedad
   const updatePropertyValue = () => {
     if (elements.modelSelect.value) {
       const selectedDev = elements.developmentSelect.value;
@@ -100,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Validaciones
+  // 5. Validaciones
   const validateForm = () => {
     const isValid = [
       elements.propertyValue.value,
@@ -125,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Cálculos
+  // 6. Cálculo del crédito
   const calculateLoan = () => {
     const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
     const years = parseFloat(elements.loanYears.value);
@@ -140,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     generateAmortizationTable(loanAmount, monthlyPayment, monthlyRate, months);
   };
 
-  // Mostrar resultados
+  // 7. Mostrar resultados
   const displayResults = (loanAmount, rate, monthlyPayment, totalPayment) => {
     elements.bankName.textContent = elements.bankSelect.options[elements.bankSelect.selectedIndex].text;
     elements.interestRate.textContent = `${(rate * 100).toFixed(2)}%`;
@@ -153,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.toggleAmortBtn.style.display = 'inline-block';
   };
 
-  // Generar tabla de amortización
+  // 8. Generar tabla de amortización
   const generateAmortizationTable = (loanAmount, monthlyPayment, monthlyRate, months) => {
     let balance = loanAmount;
     amortizationData = [];
@@ -193,21 +195,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Generar PDF
+  // 9. Función para generar PDF (versión corregida)
   const generatePDF = () => {
     try {
-      if (amortizationData.length === 0) throw new Error("No hay datos de simulación");
+      if (amortizationData.length === 0) throw new Error("Primero realice una simulación válida");
       
-      const doc = new jspdf.jsPDF();
-      const date = new Date().toLocaleDateString();
-      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      doc.setFont("helvetica");
+      let yPos = 20;
+
       doc.setFontSize(18);
-      doc.text("Reporte de Simulación de Crédito", 20, 20);
+      doc.text("Reporte de Simulación de Crédito", 20, yPos);
+      yPos += 10;
+
       doc.setFontSize(12);
-      doc.text(`Fecha: ${date}`, 20, 30);
+      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, yPos);
+      yPos += 15;
 
       doc.autoTable({
-        startY: 40,
+        startY: yPos,
         head: [['Concepto', 'Valor']],
         body: [
           ['Institución', elements.bankName.textContent],
@@ -215,11 +227,14 @@ document.addEventListener("DOMContentLoaded", () => {
           ['Monto del préstamo', elements.loanAmount.textContent],
           ['Pago mensual', elements.monthlyPayment.textContent],
           ['Pago total', elements.totalPayment.textContent]
-        ]
+        ],
+        styles: { fontSize: 12 },
+        headStyles: { fillColor: [52, 152, 219] }
       });
 
+      yPos = doc.lastAutoTable.finalY + 15;
       doc.autoTable({
-        startY: doc.lastAutoTable.finalY + 20,
+        startY: yPos,
         head: [['Año', 'Pago Anual', 'Intereses', 'Capital', 'Saldo Restante']],
         body: amortizationData.map(item => [
           item.year,
@@ -227,17 +242,20 @@ document.addEventListener("DOMContentLoaded", () => {
           formatCurrency(item.yearlyInterest),
           formatCurrency(item.yearlyPrincipal),
           formatCurrency(item.remainingBalance)
-        ])
+        ]),
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [44, 62, 80] }
       });
 
-      doc.save('simulacion-credito.pdf');
+      doc.save(`Simulación_${Date.now()}.pdf`);
+      
     } catch (error) {
-      console.error('Error al generar PDF:', error);
-      showError('Primero realice una simulación válida');
+      console.error("Error generando PDF:", error);
+      showError(error.message.includes("simulación") ? error.message : "Error técnico al generar el reporte");
     }
   };
 
-  // Utilidades
+  // 10. Funciones utilitarias
   const formatCurrency = (amount) => 
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
 
@@ -254,6 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.amortSection.style.display = elements.amortSection.style.display === 'none' ? 'block' : 'none';
   };
 
+  // 11. Reiniciar formulario
   const resetForm = () => {
     elements.developmentSelect.value = '';
     elements.monthSelect.value = 'ene-25';
@@ -269,6 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
     hideError();
   };
 
-  // Iniciar
+  // 12. Iniciar aplicación
   init();
 });
