@@ -1,159 +1,239 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const developmentSelect = document.getElementById("developmentSelect");
-  const modelSelect = document.getElementById("modelSelect");
-  const propertyValueInput = document.getElementById("propertyValue");
-  const downPaymentInput = document.getElementById("downPayment");
-  const loanYearsInput = document.getElementById("loanYears");
-  const bankSelect = document.getElementById("bankSelect");
-  const calcBtn = document.getElementById("calcBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const toggleAmortBtn = document.getElementById("toggleAmortBtn");
-  const generatePDFBtn = document.getElementById("generatePDFBtn");
+document.addEventListener("DOMContentLoaded", () => {
+  // Elementos del DOM
+  const elements = {
+    developmentSelect: document.getElementById('developmentSelect'),
+    modelSelect: document.getElementById('modelSelect'),
+    propertyValue: document.getElementById('propertyValue'),
+    downPayment: document.getElementById('downPayment'),
+    loanYears: document.getElementById('loanYears'),
+    bankSelect: document.getElementById('bankSelect'),
+    calcBtn: document.getElementById('calcBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    errorMessage: document.getElementById('errorMessage'),
+    resultsSection: document.getElementById('resultsSection'),
+    toggleAmortBtn: document.getElementById('toggleAmortBtn'),
+    generatePDFBtn: document.getElementById('generatePDFBtn'),
+    amortSection: document.getElementById('amortSection'),
+    bankName: document.getElementById('bankName'),
+    interestRate: document.getElementById('interestRate'),
+    loanAmount: document.getElementById('loanAmount'),
+    monthlyPayment: document.getElementById('monthlyPayment'),
+    totalPayment: document.getElementById('totalPayment'),
+    simulationDate: document.getElementById('simulationDate'),
+    amortTableBody: document.querySelector('#amortizationTable tbody')
+  };
 
+  // Datos iniciales
   const DEVELOPMENTS = {
     alta: [{ name: "Santa Clara", price: 1700000 }],
     vista: [{ name: "Ventura PA", price: 750000 }],
     bosques: [{ name: "Roble A", price: 4900000 }],
   };
 
-  developmentSelect.addEventListener("change", function () {
-    modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
-    const selectedDev = developmentSelect.value;
+  let amortizationData = [];
 
-    if (selectedDev) {
-      modelSelect.disabled = false;
-      DEVELOPMENTS[selectedDev].forEach((model) => {
-        const option = document.createElement("option");
-        option.value = model.price;
-        option.textContent = model.name;
-        modelSelect.appendChild(option);
-      });
-    } else {
-      modelSelect.disabled = true;
-    }
-  });
+  // Configuración inicial
+  const setup = () => {
+    initEventListeners();
+    populateModels();
+  };
 
-  modelSelect.addEventListener("change", function () {
-    if (modelSelect.value) {
-      propertyValueInput.value = modelSelect.value;
-      propertyValueInput.removeAttribute("readonly");
-    }
-  });
-
-  function validateFields() {
-    if (propertyValueInput.value && downPaymentInput.value && loanYearsInput.value && bankSelect.value) {
-      if (parseFloat(downPaymentInput.value) > parseFloat(propertyValueInput.value)) {
-        alert("El pago inicial no puede ser mayor que el valor de la propiedad.");
-        calcBtn.disabled = true;
-      } else {
-        calcBtn.disabled = false;
+  // Llenado de modelos
+  const populateModels = () => {
+    elements.developmentSelect.addEventListener('change', () => {
+      const selectedDev = elements.developmentSelect.value;
+      elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+      
+      if (selectedDev) {
+        elements.modelSelect.disabled = false;
+        DEVELOPMENTS[selectedDev].forEach(model => {
+          const option = new Option(model.name, model.price);
+          elements.modelSelect.add(option);
+        });
       }
+    });
+  };
+
+  // Event listeners
+  const initEventListeners = () => {
+    elements.modelSelect.addEventListener('change', () => {
+      elements.propertyValue.value = elements.modelSelect.value;
+      validateForm();
+    });
+
+    elements.downPayment.addEventListener('input', validateDownPayment);
+    elements.loanYears.addEventListener('input', validateForm);
+    elements.bankSelect.addEventListener('change', validateForm);
+    elements.calcBtn.addEventListener('click', calculateLoan);
+    elements.resetBtn.addEventListener('click', resetForm);
+    elements.toggleAmortBtn.addEventListener('click', toggleAmortization);
+    elements.generatePDFBtn.addEventListener('click', generatePDF);
+  };
+
+  // Validaciones
+  const validateForm = () => {
+    const isValid = [
+      elements.propertyValue.value,
+      elements.downPayment.value,
+      elements.loanYears.value,
+      elements.bankSelect.value
+    ].every(Boolean);
+
+    elements.calcBtn.disabled = !isValid;
+  };
+
+  const validateDownPayment = () => {
+    const propertyValue = parseFloat(elements.propertyValue.value);
+    const downPayment = parseFloat(elements.downPayment.value) || 0;
+
+    if (downPayment > propertyValue) {
+      showError('El enganche no puede exceder el valor de la propiedad');
+      elements.calcBtn.disabled = true;
     } else {
-      calcBtn.disabled = true;
+      hideError();
+      validateForm();
     }
-  }
+  };
 
-  propertyValueInput.addEventListener("input", validateFields);
-  downPaymentInput.addEventListener("input", validateFields);
-  loanYearsInput.addEventListener("input", validateFields);
-  bankSelect.addEventListener("change", validateFields);
+  // Cálculos financieros
+  const calculateLoan = () => {
+    const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
+    const years = parseFloat(elements.loanYears.value);
+    const rate = parseFloat(elements.bankSelect.options[elements.bankSelect.selectedIndex].dataset.rate) / 100;
+    const monthlyRate = rate / 12;
+    const months = years * 12;
 
-  calcBtn.addEventListener("click", function () {
-    const propertyValue = parseFloat(propertyValueInput.value);
-    const downPayment = parseFloat(downPaymentInput.value);
-    const loanYears = parseFloat(loanYearsInput.value);
-    const selectedBank = bankSelect.options[bankSelect.selectedIndex];
-    const interestRate = parseFloat(selectedBank.getAttribute("data-rate"));
+    const monthlyPayment = (loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+    const totalPayment = monthlyPayment * months;
 
-    const loanAmount = propertyValue - downPayment;
-    const monthlyInterestRate = interestRate / 100 / 12;
-    const numberOfPayments = loanYears * 12;
+    displayResults(loanAmount, rate, monthlyPayment, totalPayment);
+    generateAmortizationTable(loanAmount, monthlyPayment, monthlyRate, months);
+  };
 
-    const monthlyPayment = (loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -numberOfPayments));
-    const totalPayment = monthlyPayment * numberOfPayments;
+  // Mostrar resultados
+  const displayResults = (loanAmount, rate, monthlyPayment, totalPayment) => {
+    elements.bankName.textContent = elements.bankSelect.options[elements.bankSelect.selectedIndex].text;
+    elements.interestRate.textContent = `${(rate * 100).toFixed(2)}%`;
+    elements.loanAmount.textContent = formatCurrency(loanAmount);
+    elements.monthlyPayment.textContent = formatCurrency(monthlyPayment);
+    elements.totalPayment.textContent = formatCurrency(totalPayment);
+    elements.simulationDate.textContent = `Simulación generada el: ${new Date().toLocaleDateString()}`;
+    
+    elements.resultsSection.style.display = 'block';
+    elements.toggleAmortBtn.style.display = 'inline-block';
+  };
 
-    document.getElementById("resultsSection").style.display = "block";
-    document.getElementById("bankName").textContent = `Institución: ${selectedBank.textContent}`;
-    document.getElementById("interestRate").textContent = `Tasa de interés: ${interestRate}%`;
-    document.getElementById("loanAmount").textContent = `Monto del préstamo: $${loanAmount.toLocaleString()}`;
-    document.getElementById("monthlyPayment").textContent = `Pago mensual: $${monthlyPayment.toFixed(2)}`;
-    document.getElementById("totalPayment").textContent = `Pago total: $${totalPayment.toFixed(2)}`;
-    document.getElementById("simulationDate").textContent = `Fecha de simulación: ${new Date().toLocaleDateString()}`;
-    toggleAmortBtn.style.display = "inline-block";
+  // Tabla de amortización
+  const generateAmortizationTable = (loanAmount, monthlyPayment, monthlyRate, months) => {
+    let balance = loanAmount;
+    amortizationData = [];
+    elements.amortTableBody.innerHTML = '';
 
-    generateAmortizationTable(loanAmount, monthlyInterestRate, numberOfPayments, monthlyPayment);
-  });
-
-  function generateAmortizationTable(loanAmount, monthlyInterestRate, numberOfPayments, monthlyPayment) {
-    const amortTableBody = document.getElementById("amortizationTable").getElementsByTagName("tbody")[0];
-    amortTableBody.innerHTML = "";
-
-    let remainingBalance = loanAmount;
-
-    for (let year = 1; year <= numberOfPayments / 12; year++) {
+    for (let year = 1; year <= elements.loanYears.value; year++) {
       let yearlyInterest = 0;
       let yearlyPrincipal = 0;
 
       for (let month = 1; month <= 12; month++) {
-        const interestPayment = remainingBalance * monthlyInterestRate;
-        const principalPayment = monthlyPayment - interestPayment;
-
-        yearlyInterest += interestPayment;
-        yearlyPrincipal += principalPayment;
-        remainingBalance -= principalPayment;
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        
+        yearlyInterest += interest;
+        yearlyPrincipal += principal;
+        balance -= principal;
       }
 
-      const row = amortTableBody.insertRow();
-      row.insertCell().textContent = year;
-      row.insertCell().textContent = `$${(yearlyInterest + yearlyPrincipal).toFixed(2)}`;
-      row.insertCell().textContent = `$${yearlyInterest.toFixed(2)}`;
-      row.insertCell().textContent = `$${yearlyPrincipal.toFixed(2)}`;
-      row.insertCell().textContent = `$${remainingBalance.toFixed(2)}`;
+      const rowData = {
+        year,
+        yearlyPayment: monthlyPayment * 12,
+        yearlyInterest,
+        yearlyPrincipal,
+        remainingBalance: balance
+      };
+
+      amortizationData.push(rowData);
+      elements.amortTableBody.innerHTML += `
+        <tr>
+          <td>${year}</td>
+          <td>${formatCurrency(rowData.yearlyPayment)}</td>
+          <td>${formatCurrency(rowData.yearlyInterest)}</td>
+          <td>${formatCurrency(rowData.yearlyPrincipal)}</td>
+          <td>${formatCurrency(rowData.remainingBalance)}</td>
+        </tr>
+      `;
     }
-  }
+  };
 
-  toggleAmortBtn.addEventListener("click", function () {
-    const amortSection = document.getElementById("amortSection");
-    amortSection.style.display = amortSection.style.display === "none" ? "block" : "none";
-  });
-
-  resetBtn.addEventListener("click", function () {
-    developmentSelect.value = "";
-    modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
-    modelSelect.disabled = true;
-    propertyValueInput.value = "";
-    downPaymentInput.value = "";
-    loanYearsInput.value = "";
-    bankSelect.value = "";
-    calcBtn.disabled = true;
-    document.getElementById("resultsSection").style.display = "none";
-    document.getElementById("amortSection").style.display = "none";
-    toggleAmortBtn.style.display = "none";
-  });
-
-  generatePDFBtn.addEventListener("click", function () {
+  // Generación de PDF
+  const generatePDF = () => {
     const doc = new jsPDF();
-    const bankName = document.getElementById("bankName").textContent;
-    const interestRate = document.getElementById("interestRate").textContent;
-    const loanAmount = document.getElementById("loanAmount").textContent;
-    const monthlyPayment = document.getElementById("monthlyPayment").textContent;
-    const totalPayment = document.getElementById("totalPayment").textContent;
-    const simulationDate = document.getElementById("simulationDate").textContent;
-
+    const date = new Date().toLocaleDateString();
+    
+    // Encabezado
+    doc.setFontSize(18);
     doc.text("Reporte de Simulación de Crédito", 20, 20);
-    doc.text(bankName, 20, 30);
-    doc.text(interestRate, 20, 40);
-    doc.text(loanAmount, 20, 50);
-    doc.text(monthlyPayment, 20, 60);
-    doc.text(totalPayment, 20, 70);
-    doc.text(simulationDate, 20, 80);
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${date}`, 20, 30);
 
-    const amortTable = document.getElementById("amortizationTable");
+    // Datos principales
     doc.autoTable({
-      html: amortTable,
-      startY: 90,
+      startY: 40,
+      head: [['Concepto', 'Valor']],
+      body: [
+        ['Institución', elements.bankName.textContent],
+        ['Tasa de interés', elements.interestRate.textContent],
+        ['Monto del préstamo', elements.loanAmount.textContent],
+        ['Pago mensual', elements.monthlyPayment.textContent],
+        ['Pago total', elements.totalPayment.textContent]
+      ]
     });
 
-    doc.save("SimulacionCredito.pdf");
-  });
+    // Tabla de amortización
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [['Año', 'Pago Anual', 'Intereses', 'Capital', 'Saldo Restante']],
+      body: amortizationData.map(item => [
+        item.year,
+        formatCurrency(item.yearlyPayment),
+        formatCurrency(item.yearlyInterest),
+        formatCurrency(item.yearlyPrincipal),
+        formatCurrency(item.remainingBalance)
+      ])
+    });
+
+    doc.save('simulacion-credito.pdf');
+  };
+
+  // Utilidades
+  const formatCurrency = (amount) => 
+    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+
+  const showError = (message) => {
+    elements.errorMessage.textContent = message;
+    elements.errorMessage.style.display = 'block';
+  };
+
+  const hideError = () => {
+    elements.errorMessage.style.display = 'none';
+  };
+
+  const toggleAmortization = () => {
+    elements.amortSection.style.display = elements.amortSection.style.display === 'none' ? 'block' : 'none';
+  };
+
+  const resetForm = () => {
+    elements.developmentSelect.value = '';
+    elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+    elements.modelSelect.disabled = true;
+    elements.propertyValue.value = '';
+    elements.downPayment.value = '';
+    elements.loanYears.value = '';
+    elements.bankSelect.value = '';
+    elements.resultsSection.style.display = 'none';
+    elements.amortSection.style.display = 'none';
+    elements.toggleAmortBtn.style.display = 'none';
+    hideError();
+  };
+
+  // Inicialización
+  setup();
 });
