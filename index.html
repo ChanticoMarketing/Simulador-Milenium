@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Crédito Milenium Construcasa</title>
+  <title>Simulador de Crédito Inmobiliario</title>
   <style>
     :root {
       --primary-color: #003366;
@@ -50,8 +50,7 @@
       margin-bottom: 0.5rem;
     }
 
-    input,
-    select {
+    input, select {
       padding: 0.5rem;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -80,8 +79,7 @@
       border-collapse: collapse;
     }
 
-    table th,
-    table td {
+    table th, table td {
       border: 1px solid #ccc;
       text-align: center;
       padding: 0.5rem;
@@ -128,10 +126,15 @@
         <input 
           type="number"
           id="propertyValue"
-          placeholder="Ej. 2500000"
-          oninput="validateFields()"
+          placeholder="Automático según el mes"
+          readonly
         />
       </div>
+
+      <!-- Indicador del mes actual y precio automático -->
+      <p id="currentMonthDisplay" style="font-style: italic; color: #007bff;">
+        Precio correspondiente a: (Automático)
+      </p>
 
       <div class="form-group">
         <label for="downPayment">Pago inicial (MXN)</label>
@@ -162,16 +165,6 @@
           <option value="bbva" data-rate="8.85">BBVA ~ 8.85%</option>
           <option value="santander" data-rate="8.85">Santander ~ 8.85%</option>
         </select>
-      </div>
-
-      <div class="form-group">
-        <label for="extraPayment">Pago extra mensual (MXN)</label>
-        <input
-          type="number"
-          id="extraPayment"
-          placeholder="Ej. 2000"
-          oninput="validateFields()"
-        />
       </div>
     </div>
 
