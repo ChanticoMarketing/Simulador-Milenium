@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Elementos del DOM
   const elements = {
     monthSelect: document.getElementById('monthSelect'),
     developmentSelect: document.getElementById('developmentSelect'),
@@ -24,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     amortTableBody: document.querySelector('#amortizationTable tbody')
   };
 
-  // Base de datos de precios
   const DEVELOPMENTS = {
     vista: {
       name: "Vista California",
@@ -60,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     populateModels();
   };
 
-  // Llenar modelos dinámicamente
+  // Llenar modelos
   const populateModels = () => {
     elements.developmentSelect.addEventListener('change', () => {
       const selectedDev = elements.developmentSelect.value;
@@ -76,24 +74,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Configurar eventos
+  // Eventos
   const setupEventListeners = () => {
-    // Actualizar precio al cambiar modelo/mes
     elements.modelSelect.addEventListener('change', updatePropertyValue);
     elements.monthSelect.addEventListener('change', updatePropertyValue);
-    
-    // Validaciones
     elements.downPayment.addEventListener('input', validateDownPayment);
-    [elements.loanYears, elements.bankSelect].forEach(el => el.addEventListener('change', validateForm));
-    
-    // Botones principales
+    elements.loanYears.addEventListener('input', validateForm);
+    elements.bankSelect.addEventListener('change', validateForm);
     elements.calcBtn.addEventListener('click', calculateLoan);
     elements.resetBtn.addEventListener('click', resetForm);
     elements.toggleAmortBtn.addEventListener('click', toggleAmortization);
     elements.generatePDFBtn.addEventListener('click', generatePDF);
   };
 
-  // Actualizar valor de propiedad
+  // Actualizar valor de la propiedad
   const updatePropertyValue = () => {
     if (elements.modelSelect.value) {
       const selectedDev = elements.developmentSelect.value;
@@ -131,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Cálculo del crédito
+  // Cálculos
   const calculateLoan = () => {
     const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
     const years = parseFloat(elements.loanYears.value);
@@ -201,42 +195,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Generar PDF
   const generatePDF = () => {
-    const doc = new jsPDF();
-    const date = new Date().toLocaleDateString();
-    
-    // Encabezado
-    doc.setFontSize(18);
-    doc.text("Reporte de Simulación de Crédito", 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Fecha: ${date}`, 20, 30);
+    try {
+      if (amortizationData.length === 0) throw new Error("No hay datos de simulación");
+      
+      const doc = new jspdf.jsPDF();
+      const date = new Date().toLocaleDateString();
+      
+      doc.setFontSize(18);
+      doc.text("Reporte de Simulación de Crédito", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Fecha: ${date}`, 20, 30);
 
-    // Datos principales
-    doc.autoTable({
-      startY: 40,
-      head: [['Concepto', 'Valor']],
-      body: [
-        ['Institución', elements.bankName.textContent],
-        ['Tasa de interés', elements.interestRate.textContent],
-        ['Monto del préstamo', elements.loanAmount.textContent],
-        ['Pago mensual', elements.monthlyPayment.textContent],
-        ['Pago total', elements.totalPayment.textContent]
-      ]
-    });
+      doc.autoTable({
+        startY: 40,
+        head: [['Concepto', 'Valor']],
+        body: [
+          ['Institución', elements.bankName.textContent],
+          ['Tasa de interés', elements.interestRate.textContent],
+          ['Monto del préstamo', elements.loanAmount.textContent],
+          ['Pago mensual', elements.monthlyPayment.textContent],
+          ['Pago total', elements.totalPayment.textContent]
+        ]
+      });
 
-    // Tabla de amortización
-    doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 20,
-      head: [['Año', 'Pago Anual', 'Intereses', 'Capital', 'Saldo Restante']],
-      body: amortizationData.map(item => [
-        item.year,
-        formatCurrency(item.yearlyPayment),
-        formatCurrency(item.yearlyInterest),
-        formatCurrency(item.yearlyPrincipal),
-        formatCurrency(item.remainingBalance)
-      ])
-    });
+      doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 20,
+        head: [['Año', 'Pago Anual', 'Intereses', 'Capital', 'Saldo Restante']],
+        body: amortizationData.map(item => [
+          item.year,
+          formatCurrency(item.yearlyPayment),
+          formatCurrency(item.yearlyInterest),
+          formatCurrency(item.yearlyPrincipal),
+          formatCurrency(item.remainingBalance)
+        ])
+      });
 
-    doc.save('simulacion-credito.pdf');
+      doc.save('simulacion-credito.pdf');
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      showError('Primero realice una simulación válida');
+    }
   };
 
   // Utilidades
@@ -271,6 +269,6 @@ document.addEventListener("DOMContentLoaded", () => {
     hideError();
   };
 
-  // Iniciar aplicación
+  // Iniciar
   init();
 });
