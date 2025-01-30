@@ -25,20 +25,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let amortizationData = {};
 
-    // Cargar los datos de amortización desde el JSON generado a partir del Excel
+    // ✅ Mostrar errores en pantalla
+    const showError = (message) => {
+        elements.errorMessage.textContent = message;
+        elements.errorMessage.style.display = "block";
+    };
+
+    const hideError = () => {
+        elements.errorMessage.style.display = "none";
+    };
+
+    // ✅ Cargar los datos de amortización desde el JSON generado a partir del Excel
     const loadAmortizationData = async () => {
         try {
             const response = await fetch("amortizacion.json");
+
+            if (!response.ok) {
+                throw new Error("No se pudo encontrar el archivo de amortización.");
+            }
+
             amortizationData = await response.json();
         } catch (error) {
             console.error("Error cargando datos de amortización:", error);
-            showError("No se pudo cargar la información del crédito.");
+            showError("No se pudo cargar la información del crédito. Verifique que el archivo 'amortizacion.json' exista.");
         }
     };
 
     await loadAmortizationData();
 
-    // Función para actualizar la lista de modelos de acuerdo con el desarrollo seleccionado
+    // ✅ Llenar los modelos disponibles según el desarrollo seleccionado
     const populateModels = () => {
         elements.developmentSelect.addEventListener("change", () => {
             const selectedDev = elements.developmentSelect.value;
@@ -55,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
-    // Función para actualizar el valor de la propiedad según modelo y mes seleccionados
+    // ✅ Actualizar el valor de la propiedad basado en el modelo y mes seleccionados
     const updatePropertyValue = () => {
         const selectedDev = elements.developmentSelect.value;
         const selectedModel = elements.modelSelect.value;
@@ -67,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Validar el formulario antes de habilitar el botón de cálculo
+    // ✅ Validar formulario antes de habilitar botón de cálculo
     const validateForm = () => {
         const isValid = [
             elements.propertyValue.value,
@@ -92,33 +107,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Función para calcular el crédito basado en los datos de amortización extraídos del Excel
+    // ✅ Cálculo del crédito
     const calculateLoan = () => {
-        const selectedDev = elements.developmentSelect.value;
-        const selectedModel = elements.modelSelect.value;
-        const selectedMonth = elements.monthSelect.value;
-        const loanYears = parseInt(elements.loanYears.value);
-        const bankRate = parseFloat(elements.bankSelect.options[elements.bankSelect.selectedIndex].dataset.rate) / 100;
-
-        if (!amortizationData[selectedDev] || !amortizationData[selectedDev][selectedModel]) {
-            showError("Datos de amortización no disponibles.");
-            return;
-        }
-
-        const propertyValue = parseFloat(elements.propertyValue.value);
-        const downPayment = parseFloat(elements.downPayment.value);
-        const loanAmount = propertyValue - downPayment;
-        const monthlyRate = bankRate / 12;
-        const months = loanYears * 12;
+        const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
+        const years = parseFloat(elements.loanYears.value);
+        const rate = parseFloat(elements.bankSelect.options[elements.bankSelect.selectedIndex].dataset.rate) / 100;
+        const monthlyRate = rate / 12;
+        const months = years * 12;
 
         const monthlyPayment = (loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
         const totalPayment = monthlyPayment * months;
 
-        displayResults(loanAmount, bankRate, monthlyPayment, totalPayment);
+        displayResults(loanAmount, rate, monthlyPayment, totalPayment);
         generateAmortizationTable(loanAmount, monthlyPayment, monthlyRate, months);
     };
 
-    // Mostrar los resultados en la interfaz
+    // ✅ Mostrar resultados en pantalla
     const displayResults = (loanAmount, rate, monthlyPayment, totalPayment) => {
         elements.bankName.textContent = elements.bankSelect.options[elements.bankSelect.selectedIndex].text;
         elements.interestRate.textContent = `${(rate * 100).toFixed(2)}%`;
@@ -131,7 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         elements.toggleAmortBtn.style.display = "inline-block";
     };
 
-    // Generar la tabla de amortización usando los datos obtenidos
+    // ✅ Generar tabla de amortización
     const generateAmortizationTable = (loanAmount, monthlyPayment, monthlyRate, months) => {
         let balance = loanAmount;
         elements.amortTableBody.innerHTML = "";
@@ -160,23 +164,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Formatear valores en moneda mexicana
+    // ✅ Formatear moneda mexicana
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(amount);
     };
 
-    // Mostrar errores
-    const showError = (message) => {
-        elements.errorMessage.textContent = message;
-        elements.errorMessage.style.display = "block";
-    };
-
-    // Ocultar errores
-    const hideError = () => {
-        elements.errorMessage.style.display = "none";
-    };
-
-    // Reiniciar formulario
+    // ✅ Reiniciar formulario
     const resetForm = () => {
         elements.developmentSelect.value = "";
         elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
@@ -191,7 +184,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         hideError();
     };
 
-    // Configurar eventos
+    // ✅ Eventos
     elements.calcBtn.addEventListener("click", calculateLoan);
     elements.resetBtn.addEventListener("click", resetForm);
     elements.modelSelect.addEventListener("change", updatePropertyValue);
