@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let amortizationData = {};
 
-    // ✅ Mostrar errores en pantalla
+    // ✅ Función para mostrar errores en pantalla
     const showError = (message) => {
         elements.errorMessage.textContent = message;
         elements.errorMessage.style.display = "block";
@@ -35,11 +35,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         elements.errorMessage.style.display = "none";
     };
 
-    // ✅ Cargar los datos de amortización desde el JSON generado a partir del Excel
+    // ✅ Cargar los datos de amortización desde el JSON
     const loadAmortizationData = async () => {
         try {
-            const response = await fetch("amortizacion.json");
-
+            const response = await fetch("./amortizacion.json"); // Usa "./" para buscar en la misma carpeta
+            
             if (!response.ok) {
                 throw new Error("No se pudo encontrar el archivo de amortización.");
             }
