@@ -18,65 +18,20 @@
     <p>Complete los siguientes campos para realizar la simulación de su crédito.</p>
 
     <div class="form-grid">
-      <!-- Selector de mes -->
-      <div class="form-group">
-        <label for="monthSelect">Mes de simulación</label>
-        <select id="monthSelect">
-          <option value="ene-25">Enero 2025</option>
-          <option value="feb-25">Febrero 2025</option>
-          <option value="mar-25">Marzo 2025</option>
-        </select>
-      </div>
-
       <!-- Selector de desarrollo -->
       <div class="form-group">
         <label for="developmentSelect">Desarrollo</label>
         <select id="developmentSelect">
           <option value="" disabled selected>Elige un desarrollo</option>
-          <option value="alta">Alta California</option>
-          <option value="vista">Vista California</option>
-          <option value="bosques">Bosques California</option>
+          <option value="DUPLEX_PA_10_AÑOS">DUPLEX PA - 10 Años</option>
         </select>
       </div>
 
-      <!-- Selector de modelo -->
+      <!-- Selector de opción de crédito -->
       <div class="form-group">
-        <label for="modelSelect">Modelo</label>
-        <select id="modelSelect" disabled>
-          <option value="" disabled selected>Elige un modelo</option>
-        </select>
-      </div>
-
-      <!-- Valor de la propiedad -->
-      <div class="form-group">
-        <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <input type="number" id="propertyValue" readonly>
-      </div>
-
-      <!-- Pago inicial -->
-      <div class="form-group">
-        <label for="downPayment">Pago inicial (MXN)</label>
-        <input type="number" id="downPayment" placeholder="Ej. 500000" min="0">
-      </div>
-
-      <!-- Plazo del crédito -->
-      <div class="form-group">
-        <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20" min="1" max="30">
-      </div>
-
-      <!-- Instituciones financieras -->
-      <div class="form-group">
-        <label for="bankSelect">Institución Financiera</label>
-        <select id="bankSelect">
-          <option value="" disabled selected>Elige una institución</option>
-          <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
-          <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
-          <option value="bbva" data-rate="9.55">BBVA ~ 9.55%</option>
-          <option value="scotiabank" data-rate="14.0">Scotiabank ~ 14.0%</option>
-          <option value="banorte" data-rate="11.58">Banorte ~ 11.58%</option>
-          <option value="hsbc" data-rate="12.25">HSBC ~ 12.25%</option>
-        </select>
+        <label>Opción de Crédito:</label>
+        <input type="radio" name="option" value="Opción A" checked> Opción A
+        <input type="radio" name="option" value="Opción B"> Opción B
       </div>
     </div>
 
@@ -85,46 +40,23 @@
 
     <!-- Botones principales -->
     <div class="button-group">
-      <button class="btn btn-primary" id="calcBtn" disabled>Calcular crédito</button>
+      <button class="btn btn-primary" id="calcBtn">Calcular crédito</button>
       <button class="btn btn-secondary" id="resetBtn">Limpiar campos</button>
     </div>
 
     <!-- Sección de resultados -->
     <div id="resultsSection" class="results" style="display: none;">
       <h3>Resultados de la Simulación</h3>
-      <div class="results-grid">
-        <p class="result-item"><span>Institución:</span> <span id="bankName"></span></p>
-        <p class="result-item"><span>Tasa de interés:</span> <span id="interestRate"></span></p>
-        <p class="result-item"><span>Monto del préstamo:</span> <span id="loanAmount"></span></p>
-        <p class="result-item"><span>Pago mensual:</span> <span id="monthlyPayment"></span></p>
-        <p class="result-item"><span>Pago total:</span> <span id="totalPayment"></span></p>
-        <p class="result-item" id="simulationDate"></p>
-      </div>
-
-      <!-- Botones de reporte -->
-      <div class="button-group">
-        <button class="btn btn-primary" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
-        <button class="btn btn-primary" id="generatePDFBtn">Descargar reporte en PDF</button>
-      </div>
-
-      <!-- Tabla de amortización -->
-      <div id="amortSection" style="display: none;">
-        <h3>Tabla de Amortización</h3>
-        <div class="table-container">
-          <table id="amortizationTable">
-            <thead>
-              <tr>
-                <th>Año</th>
-                <th>Pago Anual</th>
-                <th>Intereses</th>
-                <th>Capital</th>
-                <th>Saldo Restante</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Año</th>
+            <th>Saldo</th>
+            <th>Mensualidad</th>
+          </tr>
+        </thead>
+        <tbody id="amortTableBody"></tbody>
+      </table>
     </div>
   </div>
 
