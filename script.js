@@ -38,18 +38,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await loadAmortizationData();
 
-    // Función para actualizar el valor de la propiedad con base en la selección de modelo y mes
+    // Función para actualizar la lista de modelos de acuerdo con el desarrollo seleccionado
+    const populateModels = () => {
+        elements.developmentSelect.addEventListener("change", () => {
+            const selectedDev = elements.developmentSelect.value;
+            elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
+            elements.modelSelect.disabled = true;
+
+            if (amortizationData[selectedDev]) {
+                elements.modelSelect.disabled = false;
+                Object.keys(amortizationData[selectedDev]).forEach(modelName => {
+                    const option = new Option(modelName, modelName);
+                    elements.modelSelect.add(option);
+                });
+            }
+        });
+    };
+
+    // Función para actualizar el valor de la propiedad según modelo y mes seleccionados
     const updatePropertyValue = () => {
         const selectedDev = elements.developmentSelect.value;
         const selectedModel = elements.modelSelect.value;
         const selectedMonth = elements.monthSelect.value;
 
-        if (amortizationData[selectedDev] && amortizationData[selectedDev][selectedModel]) {
-            const priceData = amortizationData[selectedDev][selectedModel][selectedMonth];
-            if (priceData) {
-                elements.propertyValue.value = priceData.precio;
-                validateForm();
-            }
+        if (selectedDev && selectedModel && amortizationData[selectedDev][selectedModel][selectedMonth]) {
+            elements.propertyValue.value = amortizationData[selectedDev][selectedModel][selectedMonth].precio;
+            validateForm();
         }
     };
 
@@ -184,5 +198,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.downPayment.addEventListener("input", validateDownPayment);
     elements.loanYears.addEventListener("input", validateForm);
 
-    loadAmortizationData();
+    populateModels();
 });
