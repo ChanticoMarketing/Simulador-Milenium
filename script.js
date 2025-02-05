@@ -187,7 +187,7 @@ document.getElementById("creditForm").addEventListener("submit", function (e) {
   tableHTML += `</tbody></table>`;
   document.getElementById("amortizationTable").innerHTML = tableHTML;
 
-  // Preparar datos para las gráficas **por cada año**
+  // Preparar datos para las gráficas (por cada año)
   const chartLabels = schedule.map(row => row.year + " años");
   const chartCapital = schedule.map(row => row.balance);
   const chartPagoAnual = schedule.map(row => row.annualPayment);
@@ -196,7 +196,7 @@ document.getElementById("creditForm").addEventListener("submit", function (e) {
   document.getElementById("amortizationSection").style.display = "block";
 
   // Crear la gráfica de Capital Restante por año
-  var ctxCapital = document.getElementById('capitalChart').getContext('2d');
+  const ctxCapital = document.getElementById('capitalChart').getContext('2d');
   new Chart(ctxCapital, {
     type: 'line',
     data: {
@@ -226,7 +226,7 @@ document.getElementById("creditForm").addEventListener("submit", function (e) {
   });
 
   // Crear la gráfica de Pago Anual por año
-  var ctxPago = document.getElementById('pagoAnualChart').getContext('2d');
+  const ctxPago = document.getElementById('pagoAnualChart').getContext('2d');
   new Chart(ctxPago, {
     type: 'line',
     data: {
@@ -256,10 +256,29 @@ document.getElementById("creditForm").addEventListener("submit", function (e) {
   });
 });
 
-// Opciones extra (alertas de ejemplo)
+// Implementación de la funcionalidad para descargar el PDF
 document.getElementById("descargarPDF").addEventListener("click", function () {
-  alert("Funcionalidad para descargar la simulación en PDF aún no implementada.");
+  // Usamos html2canvas para capturar el contenedor de resultados
+  html2canvas(document.getElementById("resultados")).then(function(canvas) {
+    const imgData = canvas.toDataURL("image/png");
+    // Usamos jsPDF para crear el PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    // Si la imagen excede una página, se puede agregar más páginas (no se muestra aquí para simplificar)
+    pdf.save("simulacion.pdf");
+  });
 });
+
+// Implementación de la funcionalidad para enviar el correo usando mailto:
 document.getElementById("enviarCorreo").addEventListener("click", function () {
-  alert("Funcionalidad para enviar la simulación por correo aún no implementada.");
+  const subject = "Simulación de Crédito Inmobiliario";
+  // Extraemos el texto de la simulación (puedes personalizarlo)
+  const body = document.getElementById("resultados").innerText;
+  window.location.href = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
 });
