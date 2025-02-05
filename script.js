@@ -1,195 +1,265 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    const elements = {
-        monthSelect: document.getElementById("monthSelect"),
-        developmentSelect: document.getElementById("developmentSelect"),
-        modelSelect: document.getElementById("modelSelect"),
-        propertyValue: document.getElementById("propertyValue"),
-        downPayment: document.getElementById("downPayment"),
-        loanYears: document.getElementById("loanYears"),
-        bankSelect: document.getElementById("bankSelect"),
-        calcBtn: document.getElementById("calcBtn"),
-        resetBtn: document.getElementById("resetBtn"),
-        resultsSection: document.getElementById("resultsSection"),
-        toggleAmortBtn: document.getElementById("toggleAmortBtn"),
-        generatePDFBtn: document.getElementById("generatePDFBtn"),
-        amortSection: document.getElementById("amortSection"),
-        bankName: document.getElementById("bankName"),
-        interestRate: document.getElementById("interestRate"),
-        loanAmount: document.getElementById("loanAmount"),
-        monthlyPayment: document.getElementById("monthlyPayment"),
-        totalPayment: document.getElementById("totalPayment"),
-        simulationDate: document.getElementById("simulationDate"),
-        amortTableBody: document.querySelector("#amortizationTable tbody"),
-        errorMessage: document.getElementById("errorMessage")
-    };
+// script.js
 
-    let amortizationData = {};
+// Datos de desarrollos, modelos y precios
+const desarrollos = {
+  "Vista California": {
+    "Ventura PA": { "Feb-25": 750000, "Mar-25": 775000 },
+    "Ventura PB": { "Feb-25": 870000, "Mar-25": 890000 },
+    "Cambria": { "Feb-25": 1300000, "Mar-25": 1320000 },
+    "Catalina": { "Feb-25": 1580000, "Mar-25": 1600000 }
+  },
+  "Alta California": {
+    "Santa Clara": { "Feb-25": 1650000, "Mar-25": 1700000 },
+    "Santa Lucia": { "Feb-25": 1950000, "Mar-25": 2000000 },
+    "Santa Barbara": { "Feb-25": 2500000, "Mar-25": 2600000 }
+  },
+  "Bosques California": {
+    "Roble": { "Feb-25": 4850000, "Mar-25": 4900000 },
+    "Secuoya": { "Feb-25": 5925000, "Mar-25": 6050000 }
+  }
+};
 
-    // ✅ Función para mostrar errores en pantalla
-    const showError = (message) => {
-        elements.errorMessage.textContent = message;
-        elements.errorMessage.style.display = "block";
-    };
+// Datos de bancos y sus tasas de interés (valores numéricos sin '%')
+const bancos = {
+  "Banco A": {
+    "Tasa 10 años": 8.5,
+    "Tasa 15 años": 9.0,
+    "Tasa 20 años": 9.5
+  },
+  "Banco B": {
+    "Tasa 10 años": 9.2,
+    "Tasa 15 años": 9.7,
+    "Tasa 20 años": 10.1
+  },
+  "Banco C": {
+    "Tasa 10 años": 7.8,
+    "Tasa 15 años": 8.3,
+    "Tasa 20 años": 8.9
+  }
+};
 
-    const hideError = () => {
-        elements.errorMessage.style.display = "none";
-    };
+// Función para formatear números como moneda
+function formatCurrency(value) {
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0
+  }).format(value);
+}
 
-    // ✅ Cargar los datos de amortización desde el JSON
-    const loadAmortizationData = async () => {
-        try {
-            const response = await fetch("./amortizacion.json"); // Usa "./" para buscar en la misma carpeta
-            
-            if (!response.ok) {
-                throw new Error("No se pudo encontrar el archivo de amortización.");
+// Actualiza el selector de modelos según el desarrollo seleccionado
+document.getElementById("desarrollo").addEventListener("change", function () {
+  const desarrolloSeleccionado = this.value;
+  const modeloSelect = document.getElementById("modelo");
+  modeloSelect.innerHTML = '<option value="">-- Seleccione Modelo --</option>';
+
+  if (desarrolloSeleccionado && desarrollos[desarrolloSeleccionado]) {
+    Object.keys(desarrollos[desarrolloSeleccionado]).forEach(modelo => {
+      const option = document.createElement("option");
+      option.value = modelo;
+      option.textContent = modelo;
+      modeloSelect.appendChild(option);
+    });
+  }
+});
+
+// Manejo del envío del formulario
+document.getElementById("creditForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  // Ocultar mensaje de error
+  const errorDiv = document.getElementById("error");
+  errorDiv.textContent = "";
+  errorDiv.style.display = "none";
+
+  // Limpiar resultados, amortización y ocultar opciones extra
+  document.getElementById("resultados").innerHTML = "";
+  document.getElementById("amortizationTable").innerHTML = "";
+  document.getElementById("extras").style.display = "none";
+  document.getElementById("amortizationSection").style.display = "none";
+
+  // Captura de valores
+  const desarrollo = document.getElementById("desarrollo").value;
+  const modelo = document.getElementById("modelo").value;
+  const mes = document.getElementById("mes").value;
+  const banco = document.getElementById("banco").value;
+  const plazo = parseInt(document.getElementById("plazo").value); // plazo en años
+  const pagoInicial = parseFloat(document.getElementById("pagoInicial").value);
+
+  // Validaciones básicas
+  if (!desarrollo || !modelo || !mes || !banco || !plazo || isNaN(pagoInicial)) {
+    errorDiv.textContent = "Por favor, complete todos los campos.";
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  // Obtener precio de la vivienda
+  const precioVivienda = desarrollos[desarrollo][modelo][mes];
+
+  // Calcular el monto a financiar
+  const montoCredito = precioVivienda - pagoInicial;
+
+  // Determinar la tasa anual (interpolación si es necesario)
+  let tasaAnual;
+  if (plazo <= 10) {
+    tasaAnual = bancos[banco]["Tasa 10 años"];
+  } else if (plazo >= 20) {
+    tasaAnual = bancos[banco]["Tasa 20 años"];
+  } else if (plazo > 10 && plazo < 15) {
+    const rate10 = bancos[banco]["Tasa 10 años"];
+    const rate15 = bancos[banco]["Tasa 15 años"];
+    tasaAnual = rate10 + ((rate15 - rate10) * ((plazo - 10) / 5));
+  } else if (plazo >= 15 && plazo < 20) {
+    const rate15 = bancos[banco]["Tasa 15 años"];
+    const rate20 = bancos[banco]["Tasa 20 años"];
+    tasaAnual = rate15 + ((rate20 - rate15) * ((plazo - 15) / 5));
+  }
+
+  const r = tasaAnual / 100; // tasa anual en decimal
+
+  // Cálculo del pago anual (sin seguro) usando fórmula de anualidad
+  const annualPayment = (montoCredito * r) / (1 - Math.pow(1 + r, -plazo));
+  const seguroAnual = montoCredito * 0.005; // seguro anual (0.5%)
+  const totalAnnualPayment = annualPayment + seguroAnual;
+  const totalAPagar = totalAnnualPayment * plazo;
+  const interesesTotales = (annualPayment * plazo) - montoCredito;
+  const comision = montoCredito * 0.01; // comisión del 1%
+  const catAproximado = tasaAnual + 1.5; // aproximación del CAT
+
+  // Mostrar resultados de la simulación (valores anuales)
+  const resultadosDiv = document.getElementById("resultados");
+  resultadosDiv.innerHTML = `
+    <h2>Resultados de la Simulación</h2>
+    <div class="result-item"><span>Precio de la vivienda:</span><span>${formatCurrency(precioVivienda)}</span></div>
+    <div class="result-item"><span>Monto a financiar:</span><span>${formatCurrency(montoCredito)}</span></div>
+    <div class="result-item"><span>Pago anual estimado (sin seguro):</span><span>${formatCurrency(annualPayment)}</span></div>
+    <div class="result-item"><span>Seguro anual:</span><span>${formatCurrency(seguroAnual)}</span></div>
+    <div class="result-item"><span>Total a pagar por año:</span><span>${formatCurrency(totalAnnualPayment)}</span></div>
+    <div class="result-item"><span>Total a pagar al final:</span><span>${formatCurrency(totalAPagar)}</span></div>
+    <div class="result-item"><span>Intereses totales:</span><span>${formatCurrency(interesesTotales)}</span></div>
+    <div class="result-item"><span>Comisión por apertura:</span><span>${formatCurrency(comision)}</span></div>
+    <div class="result-item"><span>CAT aplicado:</span><span>${catAproximado.toFixed(2)}%</span></div>
+  `;
+  document.getElementById("extras").style.display = "flex";
+
+  // --- TABLA DE AMORTIZACIÓN Y GRÁFICAS (POR AÑO) ---
+  let schedule = [];
+  let balance = montoCredito;
+  for (let year = 1; year <= plazo; year++) {
+    let interestPayment = balance * r;
+    let principalPayment = annualPayment - interestPayment;
+    // Ajuste final en caso de redondeo
+    if (year === plazo && balance < annualPayment) {
+      principalPayment = balance;
+    }
+    balance = balance - principalPayment;
+    if (balance < 0) balance = 0;
+    schedule.push({
+      year: year,
+      annualPayment: annualPayment,
+      interest: interestPayment,
+      principal: principalPayment,
+      balance: balance
+    });
+  }
+
+  // Construir la tabla de amortización (por año)
+  let tableHTML = `<table>
+    <thead>
+      <tr>
+        <th>Año</th>
+        <th>Pago anual</th>
+        <th>Interés</th>
+        <th>Amortización</th>
+        <th>Saldo</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  schedule.forEach(row => {
+    tableHTML += `<tr>
+      <td>${row.year}</td>
+      <td>${formatCurrency(row.annualPayment)}</td>
+      <td>${formatCurrency(row.interest)}</td>
+      <td>${formatCurrency(row.principal)}</td>
+      <td>${formatCurrency(row.balance)}</td>
+    </tr>`;
+  });
+  tableHTML += `</tbody></table>`;
+  document.getElementById("amortizationTable").innerHTML = tableHTML;
+
+  // Preparar datos para las gráficas **por cada año**
+  const chartLabels = schedule.map(row => row.year + " años");
+  const chartCapital = schedule.map(row => row.balance);
+  const chartPagoAnual = schedule.map(row => row.annualPayment);
+
+  // Mostrar la sección de amortización (tabla y gráficas)
+  document.getElementById("amortizationSection").style.display = "block";
+
+  // Crear la gráfica de Capital Restante por año
+  var ctxCapital = document.getElementById('capitalChart').getContext('2d');
+  new Chart(ctxCapital, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'Capital Restante',
+        data: chartCapital,
+        backgroundColor: 'rgba(52,152,219,0.2)',
+        borderColor: 'rgba(52,152,219,1)',
+        borderWidth: 2,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return formatCurrency(value);
             }
-
-            amortizationData = await response.json();
-        } catch (error) {
-            console.error("Error cargando datos de amortización:", error);
-            showError("No se pudo cargar la información del crédito. Verifique que el archivo 'amortizacion.json' exista.");
+          }
         }
-    };
+      }
+    }
+  });
 
-    await loadAmortizationData();
-
-    // ✅ Llenar los modelos disponibles según el desarrollo seleccionado
-    const populateModels = () => {
-        elements.developmentSelect.addEventListener("change", () => {
-            const selectedDev = elements.developmentSelect.value;
-            elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
-            elements.modelSelect.disabled = true;
-
-            if (amortizationData[selectedDev]) {
-                elements.modelSelect.disabled = false;
-                Object.keys(amortizationData[selectedDev]).forEach(modelName => {
-                    const option = new Option(modelName, modelName);
-                    elements.modelSelect.add(option);
-                });
+  // Crear la gráfica de Pago Anual por año
+  var ctxPago = document.getElementById('pagoAnualChart').getContext('2d');
+  new Chart(ctxPago, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'Pago Anual',
+        data: chartPagoAnual,
+        backgroundColor: 'rgba(46,204,113,0.2)',
+        borderColor: 'rgba(46,204,113,1)',
+        borderWidth: 2,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return formatCurrency(value);
             }
-        });
-    };
-
-    // ✅ Actualizar el valor de la propiedad basado en el modelo y mes seleccionados
-    const updatePropertyValue = () => {
-        const selectedDev = elements.developmentSelect.value;
-        const selectedModel = elements.modelSelect.value;
-        const selectedMonth = elements.monthSelect.value;
-
-        if (selectedDev && selectedModel && amortizationData[selectedDev][selectedModel][selectedMonth]) {
-            elements.propertyValue.value = amortizationData[selectedDev][selectedModel][selectedMonth].precio;
-            validateForm();
+          }
         }
-    };
+      }
+    }
+  });
+});
 
-    // ✅ Validar formulario antes de habilitar botón de cálculo
-    const validateForm = () => {
-        const isValid = [
-            elements.propertyValue.value,
-            elements.downPayment.value,
-            elements.loanYears.value,
-            elements.bankSelect.value
-        ].every(Boolean);
-
-        elements.calcBtn.disabled = !isValid;
-    };
-
-    const validateDownPayment = () => {
-        const propertyValue = parseFloat(elements.propertyValue.value);
-        const downPayment = parseFloat(elements.downPayment.value) || 0;
-
-        if (downPayment > propertyValue) {
-            showError("El enganche no puede exceder el valor de la propiedad.");
-            elements.calcBtn.disabled = true;
-        } else {
-            hideError();
-            validateForm();
-        }
-    };
-
-    // ✅ Cálculo del crédito
-    const calculateLoan = () => {
-        const loanAmount = parseFloat(elements.propertyValue.value) - parseFloat(elements.downPayment.value);
-        const years = parseFloat(elements.loanYears.value);
-        const rate = parseFloat(elements.bankSelect.options[elements.bankSelect.selectedIndex].dataset.rate) / 100;
-        const monthlyRate = rate / 12;
-        const months = years * 12;
-
-        const monthlyPayment = (loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
-        const totalPayment = monthlyPayment * months;
-
-        displayResults(loanAmount, rate, monthlyPayment, totalPayment);
-        generateAmortizationTable(loanAmount, monthlyPayment, monthlyRate, months);
-    };
-
-    // ✅ Mostrar resultados en pantalla
-    const displayResults = (loanAmount, rate, monthlyPayment, totalPayment) => {
-        elements.bankName.textContent = elements.bankSelect.options[elements.bankSelect.selectedIndex].text;
-        elements.interestRate.textContent = `${(rate * 100).toFixed(2)}%`;
-        elements.loanAmount.textContent = formatCurrency(loanAmount);
-        elements.monthlyPayment.textContent = formatCurrency(monthlyPayment);
-        elements.totalPayment.textContent = formatCurrency(totalPayment);
-        elements.simulationDate.textContent = `Simulación generada el: ${new Date().toLocaleDateString()}`;
-
-        elements.resultsSection.style.display = "block";
-        elements.toggleAmortBtn.style.display = "inline-block";
-    };
-
-    // ✅ Generar tabla de amortización
-    const generateAmortizationTable = (loanAmount, monthlyPayment, monthlyRate, months) => {
-        let balance = loanAmount;
-        elements.amortTableBody.innerHTML = "";
-
-        for (let year = 1; year <= months / 12; year++) {
-            let yearlyInterest = 0;
-            let yearlyPrincipal = 0;
-
-            for (let month = 1; month <= 12; month++) {
-                const interest = balance * monthlyRate;
-                const principal = monthlyPayment - interest;
-                
-                yearlyInterest += interest;
-                yearlyPrincipal += principal;
-                balance -= principal;
-            }
-
-            elements.amortTableBody.innerHTML += `
-                <tr>
-                    <td>${year}</td>
-                    <td>${formatCurrency(yearlyInterest)}</td>
-                    <td>${formatCurrency(yearlyPrincipal)}</td>
-                    <td>${formatCurrency(balance)}</td>
-                </tr>
-            `;
-        }
-    };
-
-    // ✅ Formatear moneda mexicana
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(amount);
-    };
-
-    // ✅ Reiniciar formulario
-    const resetForm = () => {
-        elements.developmentSelect.value = "";
-        elements.modelSelect.innerHTML = '<option value="" disabled selected>Elige un modelo</option>';
-        elements.modelSelect.disabled = true;
-        elements.propertyValue.value = "";
-        elements.downPayment.value = "";
-        elements.loanYears.value = "";
-        elements.bankSelect.value = "";
-        elements.resultsSection.style.display = "none";
-        elements.amortSection.style.display = "none";
-        elements.toggleAmortBtn.style.display = "none";
-        hideError();
-    };
-
-    // ✅ Eventos
-    elements.calcBtn.addEventListener("click", calculateLoan);
-    elements.resetBtn.addEventListener("click", resetForm);
-    elements.modelSelect.addEventListener("change", updatePropertyValue);
-    elements.downPayment.addEventListener("input", validateDownPayment);
-    elements.loanYears.addEventListener("input", validateForm);
-
-    populateModels();
+// Opciones extra (alertas de ejemplo)
+document.getElementById("descargarPDF").addEventListener("click", function () {
+  alert("Funcionalidad para descargar la simulación en PDF aún no implementada.");
+});
+document.getElementById("enviarCorreo").addEventListener("click", function () {
+  alert("Funcionalidad para enviar la simulación por correo aún no implementada.");
 });
