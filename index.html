@@ -2,132 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Crédito Milenium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Crédito Inmobiliario</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <!-- Se utiliza la fuente definida en el CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
-    <h1>Simulador de Crédito Milenium</h1>
+    <h1>Simulador de Crédito</h1>
   </header>
-
   <div class="container">
-    <h2>Calcule su préstamo</h2>
-    <p>Complete los siguientes campos para realizar la simulación de su crédito.</p>
-
-    <div class="form-grid">
-      <!-- Selector de mes -->
-      <div class="form-group">
-        <label for="monthSelect">Mes de simulación</label>
-        <select id="monthSelect">
-          <option value="ene-25">Enero 2025</option>
-          <option value="feb-25">Febrero 2025</option>
-          <option value="mar-25">Marzo 2025</option>
-        </select>
-      </div>
-
-      <!-- Selector de desarrollo -->
-      <div class="form-group">
-        <label for="developmentSelect">Desarrollo</label>
-        <select id="developmentSelect">
-          <option value="" disabled selected>Elige un desarrollo</option>
-          <option value="alta">Alta California</option>
-          <option value="vista">Vista California</option>
-          <option value="bosques">Bosques California</option>
-        </select>
-      </div>
-
-      <!-- Selector de modelo -->
-      <div class="form-group">
-        <label for="modelSelect">Modelo</label>
-        <select id="modelSelect" disabled>
-          <option value="" disabled selected>Elige un modelo</option>
-        </select>
-      </div>
-
-      <!-- Valor de la propiedad (ahora cargado desde JSON) -->
-      <div class="form-group">
-        <label for="propertyValue">Valor de la propiedad (MXN)</label>
-        <input type="number" id="propertyValue" readonly>
-      </div>
-
-      <!-- Pago inicial -->
-      <div class="form-group">
-        <label for="downPayment">Pago inicial (MXN)</label>
-        <input type="number" id="downPayment" placeholder="Ej. 500000" min="0">
-      </div>
-
-      <!-- Plazo del crédito -->
-      <div class="form-group">
-        <label for="loanYears">Plazo del crédito (años)</label>
-        <input type="number" id="loanYears" placeholder="Ej. 20" min="1" max="30">
-      </div>
-
-      <!-- Instituciones financieras -->
-      <div class="form-group">
-        <label for="bankSelect">Institución Financiera</label>
-        <select id="bankSelect">
-          <option value="" disabled selected>Elige una institución</option>
-          <option value="infonavit" data-rate="8.0">INFONAVIT ~ 8.0%</option>
-          <option value="fovissste" data-rate="9.55">FOVISSSTE ~ 9.55%</option>
-          <option value="bbva" data-rate="9.55">BBVA ~ 9.55%</option>
-          <option value="scotiabank" data-rate="14.0">Scotiabank ~ 14.0%</option>
-          <option value="banorte" data-rate="11.58">Banorte ~ 11.58%</option>
-          <option value="hsbc" data-rate="12.25">HSBC ~ 12.25%</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Mensajes de error -->
-    <div id="errorMessage" class="error-message" style="display: none;"></div>
-
-    <!-- Botones principales -->
-    <div class="button-group">
-      <button class="btn btn-primary" id="calcBtn" disabled>Calcular crédito</button>
-      <button class="btn btn-secondary" id="resetBtn">Limpiar campos</button>
-    </div>
-
-    <!-- Sección de resultados -->
-    <div id="resultsSection" class="results" style="display: none;">
-      <h3>Resultados de la Simulación</h3>
-      <div class="results-grid">
-        <p class="result-item"><span>Institución:</span> <span id="bankName"></span></p>
-        <p class="result-item"><span>Tasa de interés:</span> <span id="interestRate"></span></p>
-        <p class="result-item"><span>Monto del préstamo:</span> <span id="loanAmount"></span></p>
-        <p class="result-item"><span>Pago mensual:</span> <span id="monthlyPayment"></span></p>
-        <p class="result-item"><span>Pago total:</span> <span id="totalPayment"></span></p>
-        <p class="result-item" id="simulationDate"></p>
-      </div>
-
-      <!-- Botones de reporte -->
-      <div class="button-group">
-        <button class="btn btn-primary" id="toggleAmortBtn" style="display: none;">Ver/ocultar tabla de amortización</button>
-        <button class="btn btn-primary" id="generatePDFBtn">Descargar reporte en PDF</button>
-      </div>
-
-      <!-- Tabla de amortización -->
-      <div id="amortSection" style="display: none;">
-        <h3>Tabla de Amortización</h3>
-        <div class="table-container">
-          <table id="amortizationTable">
-            <thead>
-              <tr>
-                <th>Año</th>
-                <th>Pago Anual</th>
-                <th>Intereses</th>
-                <th>Capital</th>
-                <th>Saldo Restante</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+    <form id="creditForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="desarrollo">Desarrollo:</label>
+          <select id="desarrollo" required>
+            <option value="">-- Seleccione Desarrollo --</option>
+            <option value="Vista California">Vista California</option>
+            <option value="Alta California">Alta California</option>
+            <option value="Bosques California">Bosques California</option>
+          </select>
         </div>
+        <div class="form-group">
+          <label for="modelo">Modelo de Casa:</label>
+          <select id="modelo" required>
+            <option value="">-- Seleccione Modelo --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="mes">Mes de Compra:</label>
+          <select id="mes" required>
+            <option value="Feb-25">Feb-25</option>
+            <option value="Mar-25">Mar-25</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="banco">Banco:</label>
+          <select id="banco" required>
+            <option value="">-- Seleccione Banco --</option>
+            <option value="Banco A">Banco A</option>
+            <option value="Banco B">Banco B</option>
+            <option value="Banco C">Banco C</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="plazo">Plazo (años):</label>
+          <!-- Campo numérico para seleccionar libremente la cantidad de años -->
+          <input type="number" id="plazo" placeholder="Ingresa el número de años" required min="1" step="1">
+        </div>
+        <div class="form-group">
+          <label for="pagoInicial">Pago inicial ($):</label>
+          <input type="number" id="pagoInicial" placeholder="Ingresa el pago inicial" required min="0" step="any">
+        </div>
+        <!-- Mensaje de error; inicialmente oculto -->
+        <div id="error" class="error-message" style="display: none;"></div>
       </div>
+      <div class="button-group">
+        <button type="submit" class="btn btn-primary">Calcular Crédito</button>
+      </div>
+    </form>
+
+    <!-- Sección de resultados de la simulación -->
+    <div id="resultados" class="results"></div>
+
+    <!-- Opciones extra (PDF y correo; se quitó el botón de asesoría) -->
+    <div id="extras" class="button-group" style="display: none;">
+      <button class="btn btn-secondary" id="descargarPDF">Descargar simulación en PDF</button>
+      <button class="btn btn-secondary" id="enviarCorreo">Enviar simulación por correo</button>
+    </div>
+
+    <!-- Sección de amortización: tabla y gráficas -->
+    <div id="amortizationSection" style="display: none;">
+      <h2>Tabla de Amortización (por año)</h2>
+      <div id="amortizationTable"></div>
+      <h2>Gráfica de Capital Restante por año</h2>
+      <canvas id="capitalChart"></canvas>
+      <h2>Gráfica de Pago Anual por año</h2>
+      <canvas id="pagoAnualChart"></canvas>
     </div>
   </div>
 
+  <!-- Incluimos Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
