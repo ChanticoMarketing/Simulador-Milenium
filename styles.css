@@ -129,6 +129,7 @@ select {
   padding: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
 }
 
 .results .result-item {
