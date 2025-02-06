@@ -270,15 +270,7 @@ document.getElementById("descargarPDF").addEventListener("click", function () {
     let heightLeft = imgHeight;
     let position = 0;
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    // Si la imagen excede una página, se puede agregar más páginas (no se muestra aquí para simplificar)
+    // Si la imagen excede una página, se pueden agregar más páginas (este ejemplo asume una sola página)
     pdf.save("simulacion.pdf");
   });
-});
-
-// Implementación de la funcionalidad para enviar el correo usando mailto:
-document.getElementById("enviarCorreo").addEventListener("click", function () {
-  const subject = "Simulación de Crédito Inmobiliario";
-  // Extraemos el texto de la simulación (puedes personalizarlo)
-  const body = document.getElementById("resultados").innerText;
-  window.location.href = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
 });
