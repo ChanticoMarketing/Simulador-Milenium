@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Simulador de Crédito Inmobiliario</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Se utiliza la fuente definida en el CSS -->
+  <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+  <!-- Estilo en línea para restringir el ancho del contenedor que se usará en el PDF -->
+  <style>
+    #simulacionCompleta {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -15,6 +24,7 @@
   <main class="container">
     <form id="creditForm">
       <div class="form-grid">
+        <!-- Desarrollo -->
         <div class="form-group">
           <label for="desarrollo">Desarrollo:</label>
           <select id="desarrollo" required>
@@ -24,12 +34,14 @@
             <option value="Bosques California">Bosques California</option>
           </select>
         </div>
+        <!-- Modelo -->
         <div class="form-group">
           <label for="modelo">Modelo de Casa:</label>
           <select id="modelo" required>
             <option value="">-- Seleccione Modelo --</option>
           </select>
         </div>
+        <!-- Mes -->
         <div class="form-group">
           <label for="mes">Mes de Compra:</label>
           <select id="mes" required>
@@ -37,25 +49,31 @@
             <option value="Mar-25">Mar-25</option>
           </select>
         </div>
+        <!-- Banco -->
         <div class="form-group">
           <label for="banco">Banco:</label>
           <select id="banco" required>
             <option value="">-- Seleccione Banco --</option>
-            <option value="Banco A">Banco A</option>
-            <option value="Banco B">Banco B</option>
-            <option value="Banco C">Banco C</option>
+            <option value="INFONAVIT">INFONAVIT</option>
+            <option value="FOVISSSTE">FOVISSSTE</option>
+            <option value="BBVA">BBVA</option>
+            <option value="Scotiabank">Scotiabank</option>
+            <option value="HSBC">HSBC</option>
           </select>
+          <!-- Mostrar la tasa de interés del banco -->
+          <p id="tasaInfo" class="info"></p>
         </div>
+        <!-- Plazo -->
         <div class="form-group">
           <label for="plazo">Plazo (años):</label>
-          <!-- Campo numérico para seleccionar libremente la cantidad de años -->
           <input type="number" id="plazo" placeholder="Ingresa el número de años" required min="1" step="1">
         </div>
+        <!-- Pago Inicial -->
         <div class="form-group">
           <label for="pagoInicial">Pago inicial ($):</label>
           <input type="number" id="pagoInicial" placeholder="Ingresa el pago inicial" required min="0" step="any">
         </div>
-        <!-- Mensaje de error; inicialmente oculto -->
+        <!-- Mensaje de error -->
         <div id="error" class="error-message" style="display: none;"></div>
       </div>
       <div class="button-group">
@@ -65,7 +83,7 @@
 
     <!-- Contenedor que agrupa la simulación completa para el PDF -->
     <div id="simulacionCompleta" style="display: none;">
-      <!-- Sección de resultados de la simulación -->
+      <!-- Sección de resultados -->
       <div id="resultados" class="results"></div>
       <!-- Sección de amortización: tabla y gráficas -->
       <div id="amortizationSection">
@@ -78,18 +96,18 @@
       </div>
     </div>
 
-    <!-- Opciones extra: Se mantiene solo el botón para descargar el PDF -->
+    <!-- Opciones extra: Solo botón para descargar PDF -->
     <div id="extras" class="button-group" style="display: none;">
       <button class="btn btn-secondary" id="descargarPDF">Descargar simulación en PDF</button>
     </div>
   </main>
 
-  <!-- Incluimos Chart.js -->
+  <!-- Librerías externas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Incluimos html2canvas para capturar el DOM y generar el PDF -->
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <!-- Incluimos jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- jsPDF AutoTable plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
