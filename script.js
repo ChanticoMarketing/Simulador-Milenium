@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const extrasDiv = document.getElementById("extras");
   const simulacionCompletaDiv = document.getElementById("simulacionCompleta");
   const amortizationSection = document.getElementById("amortizationSection");
+  const tasaInfo = document.getElementById("tasaInfo");
 
   // Variables para las instancias de Chart.js
   let capitalChartInstance = null;
@@ -39,24 +40,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Datos de bancos y sus tasas de interés (valores numéricos sin '%')
-  const bancos = {
-    "Banco A": {
-      "Tasa 10 años": 8.5,
-      "Tasa 15 años": 9.0,
-      "Tasa 20 años": 9.5
-    },
-    "Banco B": {
-      "Tasa 10 años": 9.2,
-      "Tasa 15 años": 9.7,
-      "Tasa 20 años": 10.1
-    },
-    "Banco C": {
-      "Tasa 10 años": 7.8,
-      "Tasa 15 años": 8.3,
-      "Tasa 20 años": 8.9
-    }
+  /* Información de bancos:
+     - INFONAVIT: 8.00%
+     - FOVISSSTE: 9.55%
+     - BBVA: 8.85%
+     - Scotiabank: 9.50%
+     - HSBC: 11.40%
+  */
+  const tasasBancos = {
+    "INFONAVIT": "8.00%",
+    "FOVISSSTE": "9.55%",
+    "BBVA": "8.85%",
+    "Scotiabank": "9.50%",
+    "HSBC": "11.40%"
   };
+  // Valores numéricos para cálculos
+  const bancos = {
+    "INFONAVIT": 8.00,
+    "FOVISSSTE": 9.55,
+    "BBVA": 8.85,
+    "Scotiabank": 9.50,
+    "HSBC": 11.40
+  };
+
+  // Actualiza la información de la tasa al cambiar la selección del banco
+  bancoSelect.addEventListener("change", function () {
+    const banco = this.value;
+    if (tasasBancos[banco]) {
+      tasaInfo.textContent = "Tasa de interés: " + tasasBancos[banco];
+    } else {
+      tasaInfo.textContent = "";
+    }
+  });
 
   // Función para formatear números como moneda
   function formatCurrency(value) {
@@ -83,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Función para generar la tabla de amortización (por año)
   function generarTablaAmortizacion(schedule) {
-    let tableHTML = `<table>
+    let tableHTML = `<table id="amortTable">
       <thead>
         <tr>
           <th>Año</th>
@@ -113,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const chartCapital = schedule.map(row => row.balance);
     const chartPagoAnual = schedule.map(row => row.annualPayment);
 
-    // Destruir instancias anteriores si existen
     if (capitalChartInstance) {
       capitalChartInstance.destroy();
     }
@@ -184,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
   creditForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    // Limpiar mensajes y secciones de resultados
+    // Limpiar mensajes y secciones
     errorDiv.textContent = "";
     errorDiv.style.display = "none";
     resultadosDiv.innerHTML = "";
@@ -193,59 +207,38 @@ document.addEventListener('DOMContentLoaded', function () {
     amortizationSection.style.display = "none";
     simulacionCompletaDiv.style.display = "none";
 
-    // Captura de valores
+    // Capturar valores
     const desarrollo = desarrolloSelect.value;
     const modelo = modeloSelect.value;
     const mes = mesSelect.value;
     const banco = bancoSelect.value;
-    const plazo = parseInt(plazoInput.value); // plazo en años
+    const plazo = parseInt(plazoInput.value);
     const pagoInicial = parseFloat(pagoInicialInput.value);
 
-    // Validaciones básicas
+    // Validaciones
     if (!desarrollo || !modelo || !mes || !banco || !plazo || isNaN(pagoInicial)) {
       errorDiv.textContent = "Por favor, complete todos los campos.";
       errorDiv.style.display = "block";
       return;
     }
-
-    // Obtener precio de la vivienda
     const precioVivienda = desarrollos[desarrollo][modelo][mes];
-
-    // Validación: El pago inicial no debe superar el precio de la vivienda
     if (pagoInicial > precioVivienda) {
       errorDiv.textContent = "El pago inicial no puede superar el precio de la vivienda.";
       errorDiv.style.display = "block";
       return;
     }
 
-    // Calcular el monto a financiar
+    // Calcular valores
     const montoCredito = precioVivienda - pagoInicial;
-
-    // Determinar la tasa anual (interpolación si es necesario)
-    let tasaAnual;
-    if (plazo <= 10) {
-      tasaAnual = bancos[banco]["Tasa 10 años"];
-    } else if (plazo >= 20) {
-      tasaAnual = bancos[banco]["Tasa 20 años"];
-    } else if (plazo > 10 && plazo < 15) {
-      const rate10 = bancos[banco]["Tasa 10 años"];
-      const rate15 = bancos[banco]["Tasa 15 años"];
-      tasaAnual = rate10 + ((rate15 - rate10) * ((plazo - 10) / 5));
-    } else if (plazo >= 15 && plazo < 20) {
-      const rate15 = bancos[banco]["Tasa 15 años"];
-      const rate20 = bancos[banco]["Tasa 20 años"];
-      tasaAnual = rate15 + ((rate20 - rate15) * ((plazo - 15) / 5));
-    }
-    const r = tasaAnual / 100; // tasa anual en decimal
-
-    // Cálculo del pago anual (sin seguro) usando fórmula de anualidad
+    const tasaAnual = bancos[banco];
+    const r = tasaAnual / 100;
     const annualPayment = (montoCredito * r) / (1 - Math.pow(1 + r, -plazo));
-    const seguroAnual = montoCredito * 0.005; // seguro anual (0.5%)
+    const seguroAnual = montoCredito * 0.005;
     const totalAnnualPayment = annualPayment + seguroAnual;
     const totalAPagar = totalAnnualPayment * plazo;
     const interesesTotales = (annualPayment * plazo) - montoCredito;
-    const comision = montoCredito * 0.01; // comisión del 1%
-    const catAproximado = tasaAnual + 1.5; // aproximación del CAT
+    const comision = montoCredito * 0.01;
+    const catAproximado = tasaAnual + 1.5;
 
     // Mostrar resultados generales
     resultadosDiv.innerHTML = `
@@ -283,25 +276,84 @@ document.addEventListener('DOMContentLoaded', function () {
     generarTablaAmortizacion(schedule);
     generarGraficas(schedule);
 
-    // Mostrar la sección completa de la simulación (resultados y amortización) para el PDF
+    // Mostrar la simulación completa para incluir en el PDF
     simulacionCompletaDiv.style.display = "block";
     amortizationSection.style.display = "block";
     extrasDiv.style.display = "flex";
   });
 
-  // Funcionalidad para descargar el PDF que capture la simulación completa
+  // Funcionalidad para descargar el PDF usando jsPDF, autoTable y agregando las gráficas
   document.getElementById("descargarPDF").addEventListener("click", function () {
-    html2canvas(document.getElementById("simulacionCompleta")).then(function (canvas) {
-      const imgData = canvas.toDataURL("image/png");
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // Ancho A4 en mm
-      const pageHeight = 295;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let position = 0;
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      // Nota: Si el contenido es muy extenso, habría que dividirlo en varias páginas.
-      pdf.save("simulacion.pdf");
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    let yPos = 10;
+
+    // Obtener el desarrollo seleccionado para el título
+    const desarrolloSeleccionado = desarrolloSelect.value || "Simulación";
+
+    // Agregar título que incluya el desarrollo
+    doc.setFontSize(16);
+    doc.text(`Simulador de ${desarrolloSeleccionado}`, 14, yPos);
+    yPos += 8;
+
+    // Extraer datos de los resultados
+    const resultItems = resultadosDiv.querySelectorAll(".result-item");
+    let resultsBody = [];
+    resultItems.forEach(item => {
+      const cells = item.querySelectorAll("span");
+      resultsBody.push([cells[0].innerText.replace(":", ""), cells[1].innerText]);
     });
+    doc.autoTable({
+      startY: yPos,
+      head: [["Concepto", "Valor"]],
+      body: resultsBody,
+      styles: { fontSize: 12 },
+      headStyles: { fillColor: [52, 152, 219] }
+    });
+    yPos = doc.lastAutoTable.finalY + 8;
+
+    // Insertar tabla de amortización desde el HTML generado
+    doc.text("Tabla de Amortización (por año)", 14, yPos);
+    yPos += 5;
+    doc.autoTable({
+      html: '#amortTable',
+      startY: yPos,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [44, 62, 80] }
+    });
+    yPos = doc.lastAutoTable.finalY + 8;
+
+    // Agregar las gráficas
+    // Gráfica de Capital Restante
+    const capitalCanvas = document.getElementById("capitalChart");
+    const capitalImgData = capitalCanvas.toDataURL("image/png");
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const margin = 10;
+    const capitalImgWidth = pageWidth - 2 * margin;
+    const capitalImgHeight = capitalCanvas.height * capitalImgWidth / capitalCanvas.width;
+    if (yPos + capitalImgHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+    }
+    doc.text("Gráfica de Capital Restante", 14, yPos);
+    yPos += 5;
+    doc.addImage(capitalImgData, 'PNG', margin, yPos, capitalImgWidth, capitalImgHeight);
+    yPos += capitalImgHeight + 8;
+
+    // Gráfica de Pago Anual
+    const pagoCanvas = document.getElementById("pagoAnualChart");
+    const pagoImgData = pagoCanvas.toDataURL("image/png");
+    const pagoImgWidth = pageWidth - 2 * margin;
+    const pagoImgHeight = pagoCanvas.height * pagoImgWidth / pagoCanvas.width;
+    if (yPos + pagoImgHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+    }
+    doc.text("Gráfica de Pago Anual", 14, yPos);
+    yPos += 5;
+    doc.addImage(pagoImgData, 'PNG', margin, yPos, pagoImgWidth, pagoImgHeight);
+
+    doc.save("simulacion.pdf");
   });
 });
