@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const simulacionCompletaDiv = document.getElementById("simulacionCompleta");
   const amortizationSection = document.getElementById("amortizationSection");
   const tasaInfo = document.getElementById("tasaInfo");
+  const limpiarSimulacionBtn = document.getElementById("limpiarSimulacion");
 
-  // Variables para las instancias de Chart.js
+  // Variables para instancias de Chart.js
   let capitalChartInstance = null;
   let pagoAnualChartInstance = null;
 
@@ -54,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
     "Scotiabank": "9.50%",
     "HSBC": "11.40%"
   };
-  // Valores numéricos para cálculos
   const bancos = {
     "INFONAVIT": 8.00,
     "FOVISSSTE": 9.55,
@@ -282,6 +282,17 @@ document.addEventListener('DOMContentLoaded', function () {
     extrasDiv.style.display = "flex";
   });
 
+  // Botón para limpiar la simulación
+  limpiarSimulacionBtn.addEventListener("click", function () {
+    creditForm.reset();
+    resultadosDiv.innerHTML = "";
+    amortizationTableDiv.innerHTML = "";
+    simulacionCompletaDiv.style.display = "none";
+    amortizationSection.style.display = "none";
+    extrasDiv.style.display = "none";
+    tasaInfo.textContent = "";
+  });
+
   // Funcionalidad para descargar el PDF usando jsPDF, autoTable y agregando las gráficas
   document.getElementById("descargarPDF").addEventListener("click", function () {
     const { jsPDF } = window.jspdf;
@@ -290,8 +301,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Obtener el desarrollo seleccionado para el título
     const desarrolloSeleccionado = desarrolloSelect.value || "Simulación";
-
-    // Agregar título que incluya el desarrollo
     doc.setFontSize(16);
     doc.text(`Simulador de ${desarrolloSeleccionado}`, 14, yPos);
     yPos += 8;
@@ -312,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     yPos = doc.lastAutoTable.finalY + 8;
 
-    // Insertar tabla de amortización desde el HTML generado
+    // Insertar tabla de amortización a partir del HTML generado
     doc.text("Tabla de Amortización (por año)", 14, yPos);
     yPos += 5;
     doc.autoTable({
@@ -323,12 +332,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     yPos = doc.lastAutoTable.finalY + 8;
 
-    // Agregar las gráficas
+    // Agregar las gráficas:
     // Gráfica de Capital Restante
     const capitalCanvas = document.getElementById("capitalChart");
     const capitalImgData = capitalCanvas.toDataURL("image/png");
-    const pageWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
     const margin = 10;
     const capitalImgWidth = pageWidth - 2 * margin;
     const capitalImgHeight = capitalCanvas.height * capitalImgWidth / capitalCanvas.width;
